@@ -72,24 +72,24 @@ public class CharacterCreator : MonoBehaviour {
         Dictionary<string, IK.AngleLimits> res = new Dictionary<string, IK.AngleLimits>();
         res["Pelvis"] = null;
 
-        res["Spine1"] = new IK.AngleLimits(-20, 20);
+        res["Spine1"] = new IK.AngleLimits(0, 0);
         res["Spine2"] = new IK.AngleLimits(-20, 20);
         res["Spine3"] = new IK.AngleLimits(-20, 20);
 
         res["Head"] = new IK.AngleLimits(-20, 20);
 
-        res["LeftShoulder"] = new IK.AngleLimits(-90, 180);
+        res["LeftShoulder"] = new IK.AngleLimits(-130, 160);
         res["LeftArm"] = new IK.AngleLimits(0, 170);
         res["LeftHand"] = new IK.AngleLimits(-20, 20);
 
-        res["RightShoulder"] = new IK.AngleLimits(-90, 180);
+        res["RightShoulder"] = new IK.AngleLimits(-130, 160);
         res["RightArm"] = new IK.AngleLimits(0, 170);
         res["RightHand"] = new IK.AngleLimits(-20, 20);
 
-        res["LeftHip"] = new IK.AngleLimits(-30, 170);
+        res["LeftHip"] = new IK.AngleLimits(-80, 150);
         res["LeftElbow"] = new IK.AngleLimits(-170, 0);
 
-        res["RightHip"] = new IK.AngleLimits(-30, 170);
+        res["RightHip"] = new IK.AngleLimits(-80, 150);
         res["RightElbow"] = new IK.AngleLimits(-170, 0);
 
         return res;
