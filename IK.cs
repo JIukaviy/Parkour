@@ -153,68 +153,6 @@ public class IK {
         }
     }
     
-    public class ChainElement {
-        ChainElement mParent;
-        List<ChainElement> mChilds;
-        AngleLimits mLimits;
-        bool mUseLimits;
-        Skeleton.Bone mBone;
-
-        public string name {
-            get {
-                return mBone.name;
-            }
-        }
-        
-        public ChainElement(ChainElement Parent, Skeleton.Bone Bone, AngleLimits Limits) {
-            mParent = Parent;
-            mLimits = Limits;
-            mUseLimits = mLimits != null;
-            mChilds = new List<ChainElement>();
-            mBone = Bone;
-            if(mParent != null) {
-                mParent.mChilds.Add(this);
-            }
-        }
-
-        void LookAt(Vector2 Target) {
-            Quaternion2D angle = mBone.WorldAngleToLocal(new Quaternion2D(mBone.startPoint, Target));
-            if (mUseLimits) {
-                angle = mLimits.ChainAngle(angle);
-            }
-            mBone.localAngle = angle;
-        }
-
-        public void TargetTo(Vector2 Target) {
-            if (mBone.name != "LeftHand" && mBone.name != "LeftArm" && mBone.name != "LeftShoulder") {
-                return;
-            }
-
-            LookAt(Target);
-
-            if (mParent != null) {
-                mParent.TargetTo(Target - (mBone.endPoint - mBone.startPoint));
-            }
-            
-            LookAt(Target);
-        }
-
-        public ChainElement FindByName(string Name) {
-            if (Name == name) {
-                return this;
-            }
-
-            foreach (ChainElement element in mChilds) {
-                ChainElement findedElement = element.FindByName(Name);
-                if (findedElement != null) {
-                    return findedElement;
-                }
-            }
-
-            return null;
-        }
-    }
-
     Skeleton mSkeleton;
     Skeleton.Bone[] mBones;
     AngleLimits[] mAngleLimits;
@@ -310,40 +248,5 @@ public class IK {
         Target = mEndTarget.TryMoveTo(Target);
         Target = BackwardStep(Target);
         return Target;
-    }
-
-    public interface IKChainCreator {
-        ChainElement GetIKChain();
-    }
-
-    public class IKChainFromSkeletonCreator : IKChainCreator {
-        Skeleton.Bone mRoot;
-        Dictionary<string, AngleLimits> mLimits;
-
-        public IKChainFromSkeletonCreator(Skeleton.Bone Root, Dictionary<string, AngleLimits> Limits) {
-            mRoot = Root;
-            mLimits = Limits;
-        }
-
-        public ChainElement GetIKChain(ChainElement IKElement, Skeleton.Bone Bone) {
-            AngleLimits angleLimits;
-            ChainElement element;
-
-            if (mLimits.TryGetValue(Bone.name, out angleLimits)) {
-                element = new ChainElement(IKElement, Bone, angleLimits);
-            } else {
-                element = new ChainElement(IKElement, Bone, null);
-            }
-
-            foreach (Skeleton.Bone bone in Bone.childs) {
-                GetIKChain(element, bone);
-            }
-
-            return element;
-        }
-
-        public ChainElement GetIKChain() {
-            return GetIKChain(null, mRoot);
-        }
     }
 }
