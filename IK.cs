@@ -40,6 +40,12 @@ public class IK {
             }
         }
 
+        public bool isFixed {
+            get {
+                return mMaxAngle == mMinAngle;
+            }
+        }
+
         public AngleLimits(float MinAngle, float MaxAngle) {
             mMinAngle = new Quaternion2D(MinAngle);
             mMaxAngle = new Quaternion2D(MaxAngle);
