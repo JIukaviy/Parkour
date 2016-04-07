@@ -39,6 +39,35 @@ public class CharacterCreator : MonoBehaviour {
     PhysicsModel.PhysicsModel mPhysicsModel;
     PhysicsModel.SkeletonToPhysicsModelAnglesMap mSkeletonToPMMap;
 
+    Skeleton GetSkeleton() {
+        Skeleton skeleton = new Skeleton();
+
+        Skeleton.Bone pelvis = skeleton.AddBone(null, 0, 90, "Pelvis");
+
+        Skeleton.Bone spine1 = skeleton.AddBone(pelvis, 0.23f, 0, "Spine1");
+        Skeleton.Bone spine2 = skeleton.AddBone(spine1, 0.23f, 0, "Spine2");
+        Skeleton.Bone spine3 = skeleton.AddBone(spine2, 0.23f, 0, "Spine3");
+
+        Skeleton.Bone head = skeleton.AddBone(spine3, 0.3f, 0, "Head");
+
+        Skeleton.Bone leftShoulder = skeleton.AddBone(spine3, 0.5f, -180, "LeftShoulder");
+        Skeleton.Bone leftArm = skeleton.AddBone(leftShoulder, 0.5f, 0, "LeftArm");
+        Skeleton.Bone leftHand = skeleton.AddBone(leftArm, 0.15f, 0, "LeftHand");
+
+        Skeleton.Bone rightShoulder = skeleton.AddBone(spine3, 0.5f, -180, "RightShoulder");
+        Skeleton.Bone rightArm = skeleton.AddBone(rightShoulder, 0.5f, 0, "RightArm");
+        Skeleton.Bone rightHand = skeleton.AddBone(rightArm, 0.15f, 0, "RightHand");
+
+        Skeleton.Bone leftHip = skeleton.AddBone(pelvis, 0.5f, -180, "LeftHip");
+        Skeleton.Bone leftElbow = skeleton.AddBone(leftHip, 0.5f, 0, "LeftElbow");
+
+        Skeleton.Bone rightHip = skeleton.AddBone(pelvis, 0.5f, -180, "RightHip");
+        Skeleton.Bone rightElbow = skeleton.AddBone(rightHip, 0.5f, 0, "RightElbow");
+
+        skeleton.UpdateSkeleton();
+        return skeleton;
+    }
+
     Dictionary<string, IK.AngleLimits> GetAngleLimits() {
         Dictionary<string, IK.AngleLimits> res = new Dictionary<string, IK.AngleLimits>();
         res["Pelvis"]        = null;

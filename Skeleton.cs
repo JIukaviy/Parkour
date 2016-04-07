@@ -241,42 +241,7 @@ public class Skeleton {
 
         return res;
     }
-
-    interface SkeletonCreator {
-        Skeleton GetSkeleton();
-    }
-
-    public class BipedSkeletonCreator : SkeletonCreator {
-        public Skeleton GetSkeleton() {
-            Skeleton skeleton = new Skeleton();
-
-            Bone pelvis = skeleton.AddBone(null, 0, 90, "Pelvis");
-
-            Bone spine1 = skeleton.AddBone(pelvis, 0.23f, 0, "Spine1");
-            Bone spine2 = skeleton.AddBone(spine1, 0.23f, 0, "Spine2");
-            Bone spine3 = skeleton.AddBone(spine2, 0.23f, 0, "Spine3");
-
-            Bone head = skeleton.AddBone(spine3, 0.3f, 0, "Head");
-
-            Bone leftShoulder = skeleton.AddBone(spine3, 0.5f, -180, "LeftShoulder");
-            Bone leftArm = skeleton.AddBone(leftShoulder, 0.5f, 0, "LeftArm");
-            Bone leftHand = skeleton.AddBone(leftArm, 0.15f, 0, "LeftHand");
-
-            Bone rightShoulder = skeleton.AddBone(spine3, 0.5f, -180, "RightShoulder");
-            Bone rightArm = skeleton.AddBone(rightShoulder, 0.5f, 0, "RightArm");
-            Bone rightHand = skeleton.AddBone(rightArm, 0.15f, 0, "RightHand");
-
-            Bone leftHip = skeleton.AddBone(pelvis, 0.5f, -180, "LeftHip");
-            Bone leftElbow = skeleton.AddBone(leftHip, 0.5f, 0, "LeftElbow");
-
-            Bone rightHip = skeleton.AddBone(pelvis, 0.5f, -180, "RightHip");
-            Bone rightElbow = skeleton.AddBone(rightHip, 0.5f, 0, "RightElbow");
-
-            skeleton.UpdateSkeleton();
-            return skeleton;
-        }
-    }
-
+    
     static public int GetBoneCount(Bone Parent) {
         int count = 1;
         foreach (Bone bone in Parent.childs) {
