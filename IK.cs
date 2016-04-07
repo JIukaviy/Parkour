@@ -84,6 +84,10 @@ public class IK {
             public Vector2 TryMoveTo(Vector2 Target) {
                 return mIKTarget.IKTryMoveTo(Target, mIKID);
             }
+
+            public void MoveTo(Vector2 Position) {
+                mIKTarget.MoveTo(Position, mIKID);
+            }
         }
 
         struct IKAndID {
@@ -157,6 +161,36 @@ public class IK {
         public Vector2 TryMoveTo(Vector2 Target) {
             return TryMoveTo(Target, -1);
         }
+
+        void MoveTo(Vector2 Position, int IkId = -1) {
+            mPosition = Position;
+
+            foreach (IKAndID ikAndId in mBackwardIK) {
+                if (ikAndId.id != IkId) {
+                    ikAndId.ik.UpdateTargetPositions();
+                }
+            }
+            foreach (IKAndID ikAndId in mForwardIK) {
+                if (ikAndId.id != IkId) {
+                    ikAndId.ik.UpdateTargetPositions();
+                }
+            }
+        }
+
+        public void UpdatePosition() {
+            Vector2 middlePos = new Vector2();
+
+            foreach (IKAndID ikAndId in mBackwardIK) {
+                middlePos += ikAndId.ik.endPoint;
+            }
+            foreach (IKAndID ikAndId in mForwardIK) {
+                middlePos += ikAndId.ik.startPoint;
+            }
+
+            middlePos /= mBackwardIK.Count + mForwardIK.Count;
+
+            MoveTo(middlePos);
+        }
     }
     
     Skeleton mSkeleton;
@@ -164,6 +198,9 @@ public class IK {
     AngleLimits[] mAngleLimits;
     IKTarget.IKTargetID mEndTarget;
     IKTarget.IKTargetID mStartTarget;
+
+    public Vector2 startPoint { get { return mBones[mBones.Length - 1].startPoint; } }
+    public Vector2 endPoint { get { return mBones[0].endPoint; } }
 
     public IK(Skeleton skeleton, string startBoneName, string endBoneName, Dictionary<string, AngleLimits> AngleLimits, IKTarget StartTarget, IKTarget EndTarget) {
         mSkeleton = skeleton;
@@ -254,5 +291,9 @@ public class IK {
         Target = mEndTarget.TryMoveTo(Target);
         Target = BackwardStep(Target);
         return Target;
+    }
+
+    void UpdateTargetPositions() {
+        mEndTarget.MoveTo(mBones[mBones.Length - 1].endPoint);
     }
 }
