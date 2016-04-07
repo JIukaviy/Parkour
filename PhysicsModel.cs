@@ -35,27 +35,31 @@ namespace PhysicsModel {
             }
         }
 
-        List<GameObject> mGameObjects;
+        Dictionary<string, GameObject> mGameObjects;
         Dictionary<string, int> mNameToId;
         List<Manipulator> mManipulators;
         List<HingeJoint2D> mHingeJoints;
         int mLayer;
 
         public PhysicsModel(int Layer) {
-            mGameObjects = new List<GameObject>();
+            mGameObjects = new Dictionary<string, GameObject>();
             mNameToId = new Dictionary<string, int>();
             mManipulators = new List<Manipulator>();
             mHingeJoints = new List<HingeJoint2D>();
             mLayer = Layer;
         }
         
-        public GameObject AddGameObject(Vector2 Position, float Angle, IK.AngleLimits AngleLimits, GameObject ParentGameObject, GameObject Prefab, string Name) {
+        public GameObject AddGameObject(Vector2 Position, float Angle, IK.AngleLimits AngleLimits, float Mass, GameObject ParentGameObject, GameObject Prefab, string Name) {
             GameObject prefabInstance = GameObject.Instantiate(Prefab);
             prefabInstance.transform.RotateAround(Vector3.zero, Vector3.forward, Angle);
             prefabInstance.transform.position += new Vector3(Position.x, Position.y);
             prefabInstance.layer = mLayer;
+            
             prefabInstance.AddComponent<Rigidbody2D>();
-            prefabInstance.GetComponent<Rigidbody2D>().useAutoMass = true;
+            Rigidbody2D rigidBody = prefabInstance.GetComponent<Rigidbody2D>();
+            rigidBody.mass = Mass;
+
+            mGameObjects[Name] = prefabInstance;
 
             if (ParentGameObject != null) {
                 if (AngleLimits.isFixed) {
@@ -134,6 +138,10 @@ namespace PhysicsModel {
         public int GetIdByName(string Name) {
             return mNameToId[Name];
         }
+
+        public GameObject GetObjectByName(string Name) {
+            return mGameObjects[Name];
+        }
     }
     
     interface PhysicsModelCreator {
@@ -144,17 +152,21 @@ namespace PhysicsModel {
         Skeleton.Bone mRoot;
         Dictionary<string, IK.AngleLimits> mAngleLimits;
         Dictionary<string, GameObject> mPrefabs;
+        Dictionary<string, float> mMasses;
         int mLayer;
 
-        public PhysicsModelFromSkeletonCreator(Skeleton.Bone Root, Dictionary<string, IK.AngleLimits> AngleLimits, Dictionary<string, GameObject> Prefabs, int Layer) {
+        public PhysicsModelFromSkeletonCreator(Skeleton.Bone Root, Dictionary<string, IK.AngleLimits> AngleLimits,
+            Dictionary<string, float> Masses, Dictionary<string, GameObject> Prefabs, int Layer) {
             mRoot = Root;
             mAngleLimits = AngleLimits;
+            mMasses = Masses;
             mPrefabs = Prefabs;
             mLayer = Layer;
         }
 
         public void CreatePhysicsModel(Skeleton.Bone Bone, GameObject Parent, PhysicsModel Model) {
-            GameObject newGameObject = Model.AddGameObject(Bone.startPoint, Bone.worldAngle.euler, mAngleLimits[Bone.name], Parent, mPrefabs[Bone.name], Bone.name);
+            GameObject newGameObject = Model.AddGameObject(Bone.startPoint, Bone.worldAngle.euler, mAngleLimits[Bone.name], mMasses[Bone.name],
+                Parent, mPrefabs[Bone.name], Bone.name);
             foreach(Skeleton.Bone bone in Bone.childs) {
                 CreatePhysicsModel(bone, newGameObject, Model);
             }
