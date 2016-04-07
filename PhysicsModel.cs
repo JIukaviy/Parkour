@@ -4,7 +4,7 @@ using System;
 
 namespace PhysicsModel {
     public class PhysicsModel {
-        public class WrondCountOfAnglesException : ArgumentException {
+        public class WrongCountOfAnglesException : ArgumentException {
             int mModelCount;
             int mArgumentCount;
 
@@ -24,12 +24,12 @@ namespace PhysicsModel {
                 return String.Format("Expected array[{0}] but array[{1}] is given", ModelCount, ArgumentCount);
             }
 
-            public WrondCountOfAnglesException(int ModelCount, int ArgumentCount) : base(GetMessage(ModelCount, ArgumentCount)) {
+            public WrongCountOfAnglesException(int ModelCount, int ArgumentCount) : base(GetMessage(ModelCount, ArgumentCount)) {
                 mModelCount = ModelCount;
                 mArgumentCount = ArgumentCount;
             }
 
-            public WrondCountOfAnglesException(int ModelCount, int ArgumentCount, Exception InnerException) : base(GetMessage(ModelCount, ArgumentCount), InnerException) {
+            public WrongCountOfAnglesException(int ModelCount, int ArgumentCount, Exception InnerException) : base(GetMessage(ModelCount, ArgumentCount), InnerException) {
                 mModelCount = ModelCount;
                 mArgumentCount = ArgumentCount;
             }
@@ -107,7 +107,7 @@ namespace PhysicsModel {
 
         public void SetTargetAngles(float[] Angles) {
             if (Angles.Length != mManipulators.Count) {
-                throw new WrondCountOfAnglesException(mManipulators.Count, Angles.Length);
+                throw new WrongCountOfAnglesException(mManipulators.Count, Angles.Length);
             }
 
             for (int i = 0; i < Angles.Length; i++) {
@@ -127,7 +127,7 @@ namespace PhysicsModel {
 
         public void SetAngleLimits(Dictionary<string, IK.AngleLimits> Limits) {
             if (Limits.Count != mHingeJoints.Count) {
-                throw new WrondCountOfAnglesException(mManipulators.Count, mHingeJoints.Count);
+                throw new WrongCountOfAnglesException(mManipulators.Count, mHingeJoints.Count);
             }
 
             foreach(KeyValuePair<string, IK.AngleLimits> kv in Limits) {
