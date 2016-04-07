@@ -70,7 +70,8 @@ namespace PhysicsModel {
                 prefabInstance.AddComponent<Manipulator>();
                 Manipulator manipulator = prefabInstance.GetComponent<Manipulator>();
                 manipulator.Start();
-                manipulator.multiplier = 10;
+                manipulator.multiplier = 0.001f;
+                manipulator.force = 500;
                 mManipulators.Add(manipulator);
                 mHingJoints.Add(joint);
                 mNameToId[Name] = mManipulators.Count - 1;
@@ -148,7 +149,7 @@ namespace PhysicsModel {
         }
 
         public void GetPhysicsModel(Skeleton.Bone Bone, GameObject Parent, PhysicsModel Model) {
-            GameObject newGameObject = Model.AddGameObject(Bone.startPoint, Bone.angle, mAngleLimits[Bone.name], Parent, mPrefabs[Bone.name], Bone.name);
+            GameObject newGameObject = Model.AddGameObject(Bone.startPoint, Bone.worldAngle.euler, mAngleLimits[Bone.name], Parent, mPrefabs[Bone.name], Bone.name);
             foreach(Skeleton.Bone bone in Bone.childs) {
                 GetPhysicsModel(bone, newGameObject, Model);
             }
@@ -210,7 +211,7 @@ namespace PhysicsModel {
             Dictionary<string, IK.AngleLimits> res = new Dictionary<string, IK.AngleLimits>();
 
             foreach(KeyValuePair<string, int> kv in mPMNames) {
-                res[kv.Key] = new IK.AngleLimits(-Limits[kv.Key].maxAngle - mOffsets[kv.Value], -Limits[kv.Key].minAngle - mOffsets[kv.Value]);
+                res[kv.Key] = new IK.AngleLimits(-Limits[kv.Key].maxAngle.euler - mOffsets[kv.Value], -Limits[kv.Key].minAngle.euler - mOffsets[kv.Value]);
             }
 
             return res;

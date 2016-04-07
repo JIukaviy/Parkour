@@ -9,56 +9,56 @@ public class Skeleton {
         Vector2 mStartPoint;
         Vector2 mEndPoint;
         float mLength;
-        float mAngle;
-        float mLocalAngle;
-        float mOffsetAngle;
+        Quaternion2D mWorldAngle;
+        Quaternion2D mLocalAngle;
+        Quaternion2D mOffsetAngle;
         string mName;
 
-        public float WorldAngleToLocal(float Angle) {
-            return Angle - (mParent != null ? mParent.angle : 0) - mOffsetAngle;
+        public Quaternion2D WorldAngleToLocal(Quaternion2D Angle) {
+            Quaternion2D res = Angle / mOffsetAngle;
+            if (mParent != null) {
+                res.InverseRotate(mParent.worldAngle);
+            }
+            return res;
         }
 
-        public float LocalAngleToWorld(float Angle) {
-            return (mParent != null ? mParent.angle : 0) + mOffsetAngle + Angle;
+        public Quaternion2D LocalAngleToWorld(Quaternion2D Angle) {
+            return (mParent != null ? mParent.worldAngle : new Quaternion2D()) * mOffsetAngle * Angle;
         }
 
-        void UpdateAngle() {
-            mAngle = LocalAngleToWorld(mLocalAngle);
+        void UpdateWorldAngle() {
+            mWorldAngle = LocalAngleToWorld(mLocalAngle);
         }
 
         void UpdateEndPoint() {
-            mEndPoint = mStartPoint + new Vector2(Mathf.Cos(Mathf.Deg2Rad * mAngle), Mathf.Sin(Mathf.Deg2Rad * mAngle)) * mLength;
+            mEndPoint = mStartPoint + mWorldAngle.GetVector(mLength);
         }
 
-        public float angle {
+        public Quaternion2D worldAngle {
             get {
-                return mAngle;
+                return new Quaternion2D(mWorldAngle);
             }
             set {
-                mAngle = value;
+                mWorldAngle = new Quaternion2D(value);
+                mLocalAngle = WorldAngleToLocal(value);
                 UpdateEndPoint();
             }
         }
 
-        public float localAngle {
+        public Quaternion2D localAngle {
             get {
                 return mLocalAngle;
             }
             set {
-                mLocalAngle = value;
-                UpdateAngle();
+                mLocalAngle = new Quaternion2D(value);
+                UpdateWorldAngle();
                 UpdateEndPoint();
             }
         }
 
-        public float offsetAngle {
+        public Quaternion2D offsetAngle {
             get {
-                return mOffsetAngle;
-            }
-            set {
-                mAngle += value - mOffsetAngle;
-                mOffsetAngle = value;
-                UpdateEndPoint();
+                return new Quaternion2D(mOffsetAngle);
             }
         }
 
@@ -110,7 +110,7 @@ public class Skeleton {
             }
         }
 
-        public Bone(Bone Parent, float Length, float OffsetAngle, string Name) {
+        public Bone(Bone Parent, float Length, Quaternion2D OffsetAngle, string Name) {
             mChilds = new List<Bone>();
             mName = Name;
             mParent = Parent;
@@ -120,9 +120,10 @@ public class Skeleton {
             }
             
             mLength = Length;
-            mOffsetAngle = OffsetAngle;
-            mAngle = OffsetAngle;
+            mOffsetAngle = new Quaternion2D(OffsetAngle);
+            mLocalAngle = new Quaternion2D();
 
+            UpdateWorldAngle();
             UpdateEndPoint();
         }
 
@@ -135,7 +136,7 @@ public class Skeleton {
             foreach (Bone bone in mChilds) {
                 bone.mStartPoint = mEndPoint;
 
-                bone.UpdateAngle();
+                bone.UpdateWorldAngle();
                 bone.UpdateEndPoint();
                 bone.UpdateChilds();
             }
@@ -171,7 +172,7 @@ public class Skeleton {
         mNameToId = new Dictionary<string, int>();
     }
 
-    public Bone AddBone(Bone Parent, float Length, float OffsetAngle, string Name) {
+    public Bone AddBone(Bone Parent, float Length, Quaternion2D OffsetAngle, string Name) {
         Bone newBone = new Bone(Parent, Length, OffsetAngle, Name);
         mBones.Add(newBone);
         mNameToId[Name] = mBones.Count - 1;
@@ -181,6 +182,10 @@ public class Skeleton {
         }
 
         return newBone;
+    }
+
+    public Bone AddBone(Bone Parent, float Length, float EualerAngle, string Name) {
+        return AddBone(Parent, Length, new Quaternion2D(EualerAngle), Name);
     }
 
     public void UpdateSkeleton() {
@@ -211,7 +216,7 @@ public class Skeleton {
         float[] res = new float[mBones.Count];
 
         for (int i = 0; i < mBones.Count; i++) {
-            res[i] = mBones[i].localAngle;
+            res[i] = mBones[i].localAngle.euler;
         }
 
         return res;
@@ -221,7 +226,7 @@ public class Skeleton {
         float[] res = new float[mBones.Count - 1];
 
         for (int i = 0; i < mBones.Count - 1; i++) {
-            res[i] = mBones[i + 1].localAngle;
+            res[i] = mBones[i + 1].localAngle.euler;
         }
 
         return res;
@@ -231,7 +236,7 @@ public class Skeleton {
         float[] res = new float[mBones.Count - 1];
 
         for (int i = 0; i < mBones.Count - 1; i++) {
-            res[i] = mBones[i + 1].localAngle - mBones[i + 1].offsetAngle;
+            res[i] = Quaternion2D.ToEuler(mBones[i + 1].localAngle / mBones[i + 1].offsetAngle);
         }
 
         return res;

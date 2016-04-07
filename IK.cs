@@ -22,35 +22,46 @@ public class IK {
     }
 
     public class AngleLimits {
-        public float minAngle;
-        public float maxAngle;
+        Quaternion2D mMiddle;
+        Quaternion2D mMiddleNormal;
+        Quaternion2D mMaxAngle;
+        Quaternion2D mMinAngle;
+        float mCosLimit;
+
+        public Quaternion2D minAngle {
+            get {
+                return mMinAngle;
+            }
+        }
+
+        public Quaternion2D maxAngle {
+            get {
+                return mMaxAngle;
+            }
+        }
 
         public AngleLimits(float MinAngle, float MaxAngle) {
-            minAngle = NormalizeAngle(MinAngle);
-            maxAngle = NormalizeAngle(MaxAngle);
+            mMinAngle = new Quaternion2D(MinAngle);
+            mMaxAngle = new Quaternion2D(MaxAngle);
+            mMiddle = Quaternion2D.MiddleBetween(mMinAngle, mMaxAngle);
+            mMiddleNormal = mMiddle.GetNormal();
+            mCosLimit = Quaternion2D.CosBetween(mMiddle, mMaxAngle);
         }
 
         public JointAngleLimits2D ToJointAngleLimits2D() {
             JointAngleLimits2D res = new JointAngleLimits2D();
-            res.max = maxAngle;
-            res.min = minAngle;
+            res.max = mMaxAngle.euler;
+            res.min = mMinAngle.euler;
             return res;
         }
 
-        public static float NormalizeAngle(float Angle) {
-            if (Mathf.Abs(Angle) >= 360) {
-                Angle %= 360;
+        public Quaternion2D ChainAngle(Quaternion2D Angle) {
+            float cos = Quaternion2D.CosBetween(mMiddle, Angle);
+            if (cos > mCosLimit) {
+                return Angle;
+            } else {
+                return Quaternion2D.CosBetween(mMiddleNormal, Angle) > 0 ? mMaxAngle : mMinAngle;
             }
-            return Angle;
-        }
-
-        public float ChainAngle(float Angle) {
-            Angle = NormalizeAngle(Angle);
-
-            Angle = Mathf.Max(minAngle, Angle);
-            Angle = Mathf.Min(maxAngle, Angle);
-
-            return Angle;
         }
     }
 
@@ -167,8 +178,7 @@ public class IK {
         }
 
         void LookAt(Vector2 Target) {
-            Vector2 d = Target - mBone.startPoint;
-            float angle = mBone.WorldAngleToLocal(Mathf.Rad2Deg * Mathf.Atan2(d.y, d.x));
+            Quaternion2D angle = mBone.WorldAngleToLocal(new Quaternion2D(mBone.startPoint, Target));
             if (mUseLimits) {
                 angle = mLimits.ChainAngle(angle);
             }
@@ -249,8 +259,7 @@ public class IK {
     }
 
     void LookEndPointTo(Skeleton.Bone Bone, AngleLimits Limits, Vector2 Target) {
-        Vector2 d = Target - Bone.startPoint;
-        float angle = Bone.WorldAngleToLocal(Mathf.Atan2(d.y, d.x) * Mathf.Rad2Deg);
+        Quaternion2D angle = Bone.WorldAngleToLocal(new Quaternion2D(Bone.startPoint, Target));
         
         if (Limits != null) {
             angle = Limits.ChainAngle(angle);
@@ -260,9 +269,7 @@ public class IK {
     }
 
     void LookStartPointTo(Skeleton.Bone Bone, AngleLimits Limits, Vector2 Target) {
-        Vector2 d = Bone.endPoint - Target;
-
-        float angle = Bone.WorldAngleToLocal(Mathf.Atan2(d.y, d.x) * Mathf.Rad2Deg);
+        Quaternion2D angle = Bone.WorldAngleToLocal(new Quaternion2D(Target, Bone.startPoint));
 
         if (Limits != null) {
             angle = Limits.ChainAngle(angle);
