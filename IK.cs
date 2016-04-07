@@ -216,7 +216,7 @@ public class IK {
         Bone.localAngle = angle;
     }
 
-    public Vector2 BackwardStep(Vector2 Target) {
+    Vector2 BackwardStep(Vector2 Target) {
         for (int i = 0; i < mBones.Length - 1; i++) {
             Skeleton.Bone bone = mBones[i];
             LookEndPointTo(bone, mAngleLimits[i], Target);
@@ -226,7 +226,7 @@ public class IK {
         return Target;
     }
 
-    public Vector2 ForwardStep(Vector2 Target) {
+    Vector2 ForwardStep(Vector2 Target) {
         for (int i = mBones.Length - 2; i >= 0; i--) {
             Skeleton.Bone bone = mBones[i];
             LookStartPointTo(bone, mAngleLimits[i], Target);
