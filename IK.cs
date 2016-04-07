@@ -132,12 +132,12 @@ public class IK {
         Vector2 TryMoveTo(Vector2 Target, int IkId) {
             foreach(IKAndID ikAndId in mBackwardIK) {
                 if (ikAndId.id != IkId) {
-                    Target = ikAndId.ik.BackwardStep(Target);
+                    Target = ikAndId.ik.TryMoveEndTo(Target);
                 }
             }
             foreach (IKAndID ikAndId in mForwardIK) {
                 if (ikAndId.id != IkId) {
-                    Target = ikAndId.ik.ForwardStep(Target);
+                    Target = ikAndId.ik.TryMoveStartTo(Target);
                 }
             }
             mPosition = Target;
@@ -269,7 +269,7 @@ public class IK {
     }
 
     void LookStartPointTo(Skeleton.Bone Bone, AngleLimits Limits, Vector2 Target) {
-        Quaternion2D angle = Bone.WorldAngleToLocal(new Quaternion2D(Target, Bone.startPoint));
+        Quaternion2D angle = Bone.WorldAngleToLocal(new Quaternion2D(Target, Bone.endPoint));
 
         if (Limits != null) {
             angle = Limits.ChainAngle(angle);
@@ -291,7 +291,7 @@ public class IK {
     public Vector2 ForwardStep(Vector2 Target) {
         for (int i = mBones.Length - 2; i >= 0; i--) {
             Skeleton.Bone bone = mBones[i];
-            LookStartPointTo(bone, mAngleLimits[i-1], Target);
+            LookStartPointTo(bone, mAngleLimits[i], Target);
             bone.startPoint = Target;
             Target = bone.endPoint;
         }
