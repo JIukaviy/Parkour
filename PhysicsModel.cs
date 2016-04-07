@@ -169,21 +169,13 @@ namespace PhysicsModel {
         Dictionary<string, int> mPMNames;
 
         public SkeletonToPhysicsModelAnglesMap(Dictionary<string, int> SkeletonNames, Dictionary<string, int> PMNames, float[] SkeletonAngles, float[] PMAngles) {
-            if (SkeletonNames.Count != PMNames.Count) {
-                throw new PhysicsModel.WrondCountOfAnglesException(PMNames.Count, SkeletonNames.Count);
-            }
-
-            if (SkeletonAngles.Length != PMAngles.Length) {
-                throw new PhysicsModel.WrondCountOfAnglesException(PMNames.Count, SkeletonNames.Count);
-            }
-
-            mMap = new int[SkeletonNames.Count];
+            mMap = new int[PMNames.Count];
 
             foreach(KeyValuePair<string, int> kv in PMNames) {
-                mMap[SkeletonNames[kv.Key]] = kv.Value;
+                mMap[kv.Value] = SkeletonNames[kv.Key];
             }
 
-            mOffsets = new float[SkeletonAngles.Length];
+            mOffsets = new float[PMAngles.Length];
 
             for (int i = 0; i < mOffsets.Length; i++) {
                 mOffsets[i] = PMAngles[i] - SkeletonAngles[mMap[i]];
@@ -194,10 +186,6 @@ namespace PhysicsModel {
         }
 
         public float[] ConvertAngles(float[] Angles) {
-            if (Angles.Length != mMap.Length) {
-                throw new PhysicsModel.WrondCountOfAnglesException(mMap.Length, Angles.Length);
-            }
-
             float[] res = new float[mMap.Length];
 
             for (int i = 0; i < mMap.Length; i++) {
