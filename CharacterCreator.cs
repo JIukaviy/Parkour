@@ -70,27 +70,27 @@ public class CharacterCreator : MonoBehaviour {
 
     Dictionary<string, IK.AngleLimits> GetAngleLimits() {
         Dictionary<string, IK.AngleLimits> res = new Dictionary<string, IK.AngleLimits>();
-        res["Pelvis"]        = null;
+        res["Pelvis"] = null;
 
-        res["Spine1"]        = new IK.AngleLimits(-20, 20);
-        res["Spine2"]        = new IK.AngleLimits(-20, 20);
-        res["Spine3"]        = new IK.AngleLimits(-20, 20);
+        res["Spine1"] = new IK.AngleLimits(-20, 20);
+        res["Spine2"] = new IK.AngleLimits(-20, 20);
+        res["Spine3"] = new IK.AngleLimits(-20, 20);
 
-        res["Head"]          = new IK.AngleLimits(-20, 20);
+        res["Head"] = new IK.AngleLimits(-20, 20);
 
-        res["LeftShoulder"]  = new IK.AngleLimits(-90, 180);
-        res["LeftArm"]       = new IK.AngleLimits(0, 170);
-        res["LeftHand"]      = new IK.AngleLimits(-20, 20);
+        res["LeftShoulder"] = new IK.AngleLimits(-90, 180);
+        res["LeftArm"] = new IK.AngleLimits(0, 170);
+        res["LeftHand"] = new IK.AngleLimits(-20, 20);
 
         res["RightShoulder"] = new IK.AngleLimits(-90, 180);
-        res["RightArm"]      = new IK.AngleLimits(0, 170);
-        res["RightHand"]     = new IK.AngleLimits(-20, 20);
+        res["RightArm"] = new IK.AngleLimits(0, 170);
+        res["RightHand"] = new IK.AngleLimits(-20, 20);
 
-        res["LeftHip"]       = new IK.AngleLimits(-30, 170);
-        res["LeftElbow"]     = new IK.AngleLimits(-170, 0);
+        res["LeftHip"] = new IK.AngleLimits(-30, 170);
+        res["LeftElbow"] = new IK.AngleLimits(-170, 0);
 
-        res["RightHip"]      = new IK.AngleLimits(-30, 170);
-        res["RightElbow"]    = new IK.AngleLimits(-170, 0);
+        res["RightHip"] = new IK.AngleLimits(-30, 170);
+        res["RightElbow"] = new IK.AngleLimits(-170, 0);
 
         return res;
     }
@@ -123,8 +123,7 @@ public class CharacterCreator : MonoBehaviour {
     }
 
     void Start () {
-        Skeleton.BipedSkeletonCreator BipedSkeletonCreator = new Skeleton.BipedSkeletonCreator();
-        mSkeleton = BipedSkeletonCreator.GetSkeleton();
+        mSkeleton = GetSkeleton();
 
         Dictionary<string, IK.AngleLimits> AngleLimits = GetAngleLimits();
         Dictionary<string, GameObject> Prefabs = GetPrefabs();
@@ -145,11 +144,6 @@ public class CharacterCreator : MonoBehaviour {
         mRightLegIK = new IK(mSkeleton, "Pelvis", "RightElbow", AngleLimits, mPelvisIKTarget, mRightElbowIKTarget);
         mLeftLegIK = new IK(mSkeleton, "Pelvis", "LeftElbow", AngleLimits, mPelvisIKTarget, mLeftElbowIKTarget);
 
-        /*IK.IKChainFromSkeletonCreator IKChainFromSkeletonCreator =
-            new IK.IKChainFromSkeletonCreator(mSkeleton.root, AngleLimits);
-        mIK = IKChainFromSkeletonCreator.GetIKChain();
-
-        mIKHand = mIK.FindByName("LeftHand");*/
 
         ChainLineRenderer.ApplyLineRenderer(mSkeleton.root, 0.05f);
 
