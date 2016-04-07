@@ -155,11 +155,11 @@ public class CharacterCreator : MonoBehaviour {
     }
 
     void Update() {
-        mLeftHandIKTarget.TryMoveTo(LeftHandTargetObject.position);
-        mRightHandIKTarget.TryMoveTo(RightHandTargetObject.position);
-        //mSpine3IKTarget.TryMoveTo(Spine3TargetObject.position);
-        mLeftElbowIKTarget.TryMoveTo(LeftLegTargetObject.position);
-        mRightElbowIKTarget.TryMoveTo(RightLegTargetObject.position);
+        LeftHandTargetObject.position = mLeftHandIKTarget.TryMoveTo(LeftHandTargetObject.position);
+        RightHandTargetObject.position = mRightHandIKTarget.TryMoveTo(RightHandTargetObject.position);
+        Spine3TargetObject.position = mSpine3IKTarget.TryMoveTo(Spine3TargetObject.position);
+        LeftLegTargetObject.position = mLeftElbowIKTarget.TryMoveTo(LeftLegTargetObject.position);
+        RightLegTargetObject.position = mRightElbowIKTarget.TryMoveTo(RightLegTargetObject.position);
         mSkeleton.UpdateSkeleton();
         mPhysicsModel.SetTargetAngles(mSkeletonToPMMap.ConvertAngles(mSkeleton.GetLocalAngles()));
     }
