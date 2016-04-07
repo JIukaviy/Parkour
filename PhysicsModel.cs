@@ -38,14 +38,14 @@ namespace PhysicsModel {
         List<GameObject> mGameObjects;
         Dictionary<string, int> mNameToId;
         List<Manipulator> mManipulators;
-        List<HingeJoint2D> mHingJoints;
+        List<HingeJoint2D> mHingeJoints;
         int mLayer;
 
         public PhysicsModel(int Layer) {
             mGameObjects = new List<GameObject>();
             mNameToId = new Dictionary<string, int>();
             mManipulators = new List<Manipulator>();
-            mHingJoints = new List<HingeJoint2D>();
+            mHingeJoints = new List<HingeJoint2D>();
             mLayer = Layer;
         }
         
@@ -58,23 +58,28 @@ namespace PhysicsModel {
             prefabInstance.GetComponent<Rigidbody2D>().useAutoMass = true;
 
             if (ParentGameObject != null) {
-                prefabInstance.AddComponent<HingeJoint2D>();
-                HingeJoint2D joint = prefabInstance.GetComponent<HingeJoint2D>();
+                if (AngleLimits.isFixed) {
+                    prefabInstance.AddComponent<FixedJoint2D>();
+                    FixedJoint2D joint = prefabInstance.GetComponent<FixedJoint2D>();
 
-                joint.autoConfigureConnectedAnchor = false;
-                joint.limits = AngleLimits.ToJointAngleLimits2D();
-                joint.connectedBody = ParentGameObject.GetComponent<Rigidbody2D>();
-                joint.anchor = prefabInstance.transform.InverseTransformPoint(Position);
-                joint.connectedAnchor = ParentGameObject.transform.InverseTransformPoint(Position);
+                    joint.connectedBody = ParentGameObject.GetComponent<Rigidbody2D>();
+                } else {
+                    prefabInstance.AddComponent<HingeJoint2D>();
+                    HingeJoint2D joint = prefabInstance.GetComponent<HingeJoint2D>();
 
-                prefabInstance.AddComponent<Manipulator>();
-                Manipulator manipulator = prefabInstance.GetComponent<Manipulator>();
-                manipulator.Start();
-                manipulator.multiplier = 0.001f;
-                manipulator.force = 500;
-                mManipulators.Add(manipulator);
-                mHingJoints.Add(joint);
-                mNameToId[Name] = mManipulators.Count - 1;
+                    joint.autoConfigureConnectedAnchor = false;
+                    joint.limits = AngleLimits.ToJointAngleLimits2D();
+                    joint.connectedBody = ParentGameObject.GetComponent<Rigidbody2D>();
+                    joint.anchor = prefabInstance.transform.InverseTransformPoint(Position);
+                    joint.connectedAnchor = ParentGameObject.transform.InverseTransformPoint(Position);
+
+                    prefabInstance.AddComponent<Manipulator>();
+                    Manipulator manipulator = prefabInstance.GetComponent<Manipulator>();
+                    manipulator.Start();
+                    mManipulators.Add(manipulator);
+                    mHingeJoints.Add(joint);
+                    mNameToId[Name] = mManipulators.Count - 1;
+                }
             }
 
             return prefabInstance;
@@ -117,12 +122,12 @@ namespace PhysicsModel {
         }
 
         public void SetAngleLimits(Dictionary<string, IK.AngleLimits> Limits) {
-            if (Limits.Count != mHingJoints.Count) {
-                throw new WrondCountOfAnglesException(mManipulators.Count, mHingJoints.Count);
+            if (Limits.Count != mHingeJoints.Count) {
+                throw new WrondCountOfAnglesException(mManipulators.Count, mHingeJoints.Count);
             }
 
             foreach(KeyValuePair<string, IK.AngleLimits> kv in Limits) {
-                mHingJoints[mNameToId[kv.Key]].limits = kv.Value.ToJointAngleLimits2D();
+                mHingeJoints[mNameToId[kv.Key]].limits = kv.Value.ToJointAngleLimits2D();
             }
         }
 
