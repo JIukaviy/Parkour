@@ -132,4 +132,12 @@ public class Quaternion2D {
     public static Quaternion2D operator+(Quaternion2D a, Quaternion2D b) {
         return MiddleBetween(a, b);
     }
+
+    public static bool operator==(Quaternion2D a, Quaternion2D b) {
+        return a.mCos == b.mCos && a.mSin == b.mSin;
+    }
+
+    public static bool operator!=(Quaternion2D a, Quaternion2D b) {
+        return a.mCos != b.mCos || a.mSin != b.mSin;
+    }
 }
