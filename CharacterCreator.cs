@@ -144,6 +144,7 @@ public class CharacterCreator : MonoBehaviour {
         mRightLegIK = new IK(mSkeleton, "Pelvis", "RightElbow", AngleLimits, mPelvisIKTarget, mRightElbowIKTarget);
         mLeftLegIK = new IK(mSkeleton, "Pelvis", "LeftElbow", AngleLimits, mPelvisIKTarget, mLeftElbowIKTarget);
 
+        mSpine3IKTarget.anchor = false;
 
         ChainLineRenderer.ApplyLineRenderer(mSkeleton.root, 0.05f);
 
