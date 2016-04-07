@@ -95,7 +95,7 @@ public class Skeleton {
                 return mStartPoint;
             }
             set {
-                mEndPoint += value - endPoint;
+                mEndPoint += value - mStartPoint;
                 mStartPoint = value;
             }
         }
@@ -105,7 +105,7 @@ public class Skeleton {
                 return mEndPoint;
             }
             set {
-                mStartPoint += value - endPoint;
+                mStartPoint += value - mEndPoint;
                 mEndPoint = value;
             }
         }
