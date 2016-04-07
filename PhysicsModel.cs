@@ -148,16 +148,16 @@ namespace PhysicsModel {
             mLayer = Layer;
         }
 
-        public void GetPhysicsModel(Skeleton.Bone Bone, GameObject Parent, PhysicsModel Model) {
+        public void CreatePhysicsModel(Skeleton.Bone Bone, GameObject Parent, PhysicsModel Model) {
             GameObject newGameObject = Model.AddGameObject(Bone.startPoint, Bone.worldAngle.euler, mAngleLimits[Bone.name], Parent, mPrefabs[Bone.name], Bone.name);
             foreach(Skeleton.Bone bone in Bone.childs) {
-                GetPhysicsModel(bone, newGameObject, Model);
+                CreatePhysicsModel(bone, newGameObject, Model);
             }
         }
 
         public PhysicsModel GetPhysicsModel() {
             PhysicsModel model = new PhysicsModel(mLayer);
-            GetPhysicsModel(mRoot, null, model);
+            CreatePhysicsModel(mRoot, null, model);
             return model;
         }
     }
