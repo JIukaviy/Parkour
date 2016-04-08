@@ -13,8 +13,8 @@ public class ChainLineRenderer : MonoBehaviour {
     }
 
     void Update() {
-        mRenderer.SetPosition(0, mBone.startPoint);
-        mRenderer.SetPosition(1, mBone.endPoint);
+        mRenderer.SetPosition(0, new Vector3(mBone.startPoint.x, mBone.startPoint.y, -1));
+        mRenderer.SetPosition(1, new Vector3(mBone.endPoint.x, mBone.endPoint.y, -1));
         mRenderer.SetWidth(mWidth, mWidth);
     }
 
@@ -30,6 +30,4 @@ public class ChainLineRenderer : MonoBehaviour {
             ApplyLineRenderer(bone, Width);
         }
     }
-
-
 }
