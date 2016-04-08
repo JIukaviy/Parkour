@@ -81,6 +81,14 @@ public class Quaternion2D {
     public void InverseRotate(float Angle) {
         InverseRotate(new Quaternion2D(Angle));
     }
+
+    public Quaternion2D Clone() {
+        return new Quaternion2D(this);
+    }
+
+    public override string ToString() {
+        return string.Format("cos: {0}, sin: {1}, euler: {2}", mCos, mSin, euler);
+    }
     
     static public Quaternion2D Rotate(Quaternion2D Original, Quaternion2D Angle) {
         Quaternion2D res = new Quaternion2D(Original);
