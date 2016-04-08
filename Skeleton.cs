@@ -210,14 +210,16 @@ public class Skeleton {
         return res;
     }
 
-    public float[] GetLocalAnglesWithoutOffset() {
-        float[] res = new float[mBones.Count - 1];
-
-        for (int i = 0; i < mBones.Count - 1; i++) {
-            res[i] = Quaternion2D.ToEuler(mBones[i + 1].localAngle / mBones[i + 1].offsetAngle);
+    public void SetLocalAngles(Quaternion2D[] Angles) {
+        if (Angles.Length != mBones.Count - 1) {
+            throw new PhysicsModel.PhysicsModel.WrongCountOfAnglesException(mBones.Count - 1, Angles.Length);
         }
 
-        return res;
+        for (int i = 0; i < Angles.Length; i++) {
+            mBones[i + 1].localAngle = Angles[i];
+        }
+
+        UpdateSkeleton();
     }
     
     static public int GetBoneCount(Bone Parent) {
