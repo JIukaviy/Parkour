@@ -302,6 +302,6 @@ public class IK {
     }
 
     void UpdateTargetPositions() {
-        mEndTarget.MoveTo(mBones[mBones.Length - 1].endPoint);
+        mEndTarget.MoveTo(mBones[0].endPoint);
     }
 }
