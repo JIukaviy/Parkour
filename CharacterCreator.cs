@@ -122,14 +122,43 @@ public class CharacterCreator : MonoBehaviour {
         return res;
     }
 
+    Dictionary<string, float> GetMasses() {
+        Dictionary<string, float> res = new Dictionary<string, float>();
+
+        res["Pelvis"] = 8.17f;
+
+        res["Spine1"] = 8.17f;
+        res["Spine2"] = 8.14f;
+        res["Spine3"] = 8.17f;
+
+        res["Head"] = 5.32f;
+
+        res["LeftShoulder"] = 2.28f;
+        res["LeftArm"] = 1.52f;
+        res["LeftHand"] = 0.76f;
+
+        res["RightShoulder"] = 2.28f;
+        res["RightArm"] = 1.52f;
+        res["RightHand"] = 0.76f;
+
+        res["LeftHip"] = 9.12f;
+        res["LeftElbow"] = 3.8f;
+
+        res["RightHip"] = 9.12f;
+        res["RightElbow"] = 3.8f;
+
+        return res;
+    }
+
     void Start () {
         mSkeleton = GetSkeleton();
 
         Dictionary<string, IK.AngleLimits> AngleLimits = GetAngleLimits();
         Dictionary<string, GameObject> Prefabs = GetPrefabs();
+        Dictionary<string, float> Masses = GetMasses();
 
         PhysicsModel.PhysicsModelFromSkeletonCreator PhysicsModelFromSkeletonCreator = 
-            new PhysicsModel.PhysicsModelFromSkeletonCreator(mSkeleton.root, AngleLimits, Prefabs, LayerMask.NameToLayer("Character"));
+            new PhysicsModel.PhysicsModelFromSkeletonCreator(mSkeleton.root, AngleLimits, Masses, Prefabs, LayerMask.NameToLayer("Character"));
         mPhysicsModel = PhysicsModelFromSkeletonCreator.GetPhysicsModel();
 
         mSpine3IKTarget = new IK.IKTarget(mSkeleton.GetBoneByName("Spine3").endPoint);
