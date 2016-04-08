@@ -35,9 +35,7 @@ public class Skeleton {
         }
 
         public Quaternion2D worldAngle {
-            get {
-                return new Quaternion2D(mWorldAngle);
-            }
+            get { return new Quaternion2D(mWorldAngle); }
             set {
                 mWorldAngle = new Quaternion2D(value);
                 mLocalAngle = WorldAngleToLocal(value);
@@ -46,9 +44,7 @@ public class Skeleton {
         }
 
         public Quaternion2D localAngle {
-            get {
-                return mLocalAngle;
-            }
+            get { return mLocalAngle; }
             set {
                 mLocalAngle = new Quaternion2D(value);
                 UpdateWorldAngle();
@@ -56,44 +52,24 @@ public class Skeleton {
             }
         }
 
-        public Quaternion2D offsetAngle {
-            get {
-                return new Quaternion2D(mOffsetAngle);
-            }
-        }
+        public Quaternion2D offsetAngle { get { return new Quaternion2D(mOffsetAngle); } }
 
         public float length {
-            get {
-                return mLength;
-            }
+            get { return mLength; }
             set {
                 mLength = value;
                 UpdateEndPoint();
             }
         }
 
-        public string name {
-            get {
-                return mName;
-            }
-        }
+        public string name { get { return mName; } }
 
-        public List<Bone> childs {
-            get {
-                return mChilds;
-            }
-        }
+        public List<Bone> childs { get { return mChilds; } }
 
-        public Bone parent {
-            get {
-                return mParent;
-            }
-        }
+        public Bone parent { get { return mParent; } }
 
         public Vector2 startPoint {
-            get {
-                return mStartPoint;
-            }
+            get { return mStartPoint; }
             set {
                 mEndPoint += value - mStartPoint;
                 mStartPoint = value;
@@ -101,9 +77,7 @@ public class Skeleton {
         }
 
         public Vector2 endPoint {
-            get {
-                return mEndPoint;
-            }
+            get { return mEndPoint; }
             set {
                 mStartPoint += value - mEndPoint;
                 mEndPoint = value;
