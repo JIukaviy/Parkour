@@ -72,10 +72,10 @@ namespace PhysicsModel {
                     HingeJoint2D joint = prefabInstance.GetComponent<HingeJoint2D>();
 
                     joint.autoConfigureConnectedAnchor = false;
-                    joint.limits = AngleLimits.ToInverseJointAngleLimits2D();
                     joint.connectedBody = ParentGameObject.GetComponent<Rigidbody2D>();
                     joint.anchor = prefabInstance.transform.InverseTransformPoint(Position);
                     joint.connectedAnchor = ParentGameObject.transform.InverseTransformPoint(Position);
+                    joint.limits = AngleLimits.ToInverseJointAngleLimits2D();
 
                     prefabInstance.AddComponent<Manipulator>();
                     Manipulator manipulator = prefabInstance.GetComponent<Manipulator>();
@@ -117,6 +117,30 @@ namespace PhysicsModel {
             for (int i = 0; i < Angles.Length; i++) {
                 SetTargetAngle(i, Angles[i]);
             }
+        }
+
+        public Quaternion2D[] GetAngles() {
+            Quaternion2D[] res = new Quaternion2D[mManipulators.Count];
+
+            for(int i = 0; i < res.Length; i++) {
+                res[i] = GetAngleById(i);
+            }
+
+            return res;
+        }
+
+        public Quaternion2D GetReferenceAngle(int Id) {
+            return new Quaternion2D(mHingeJoints[Id].referenceAngle);
+        }
+
+        public Quaternion2D[] GetReferenceAngles() {
+            Quaternion2D[] res = new Quaternion2D[mHingeJoints.Count];
+
+            for (int i = 0; i < res.Length; i++) {
+                res[i] = new Quaternion2D(mHingeJoints[i].referenceAngle);
+            }
+
+            return res;
         }
 
         public float[] GetTargetAngles() {
