@@ -38,6 +38,15 @@ public class CharacterCreator : MonoBehaviour {
     IK.IKTarget mRightElbowIKTarget;
     PhysicsModel.PhysicsModel mPhysicsModel;
     PhysicsModel.SkeletonToPhysicsModelAnglesMap mSkeletonToPMMap;
+    Transform mPMRootTranform;
+
+    public Skeleton skeleton { get { return mSkeleton; } }
+    public IK.IKTarget leftArmIKTarget { get { return mLeftHandIKTarget; } }
+    public IK.IKTarget rightArmIKTaret { get { return mRightHandIKTarget; } }
+    public IK.IKTarget spineIKTarget { get { return mSpine3IKTarget; } }
+    public IK.IKTarget pelvisIKTarget { get { return mPelvisIKTarget; } }
+    public IK.IKTarget leftElbowIKTarget { get { return mLeftElbowIKTarget; } }
+    public IK.IKTarget rightElbowIKTarget { get { return mRightElbowIKTarget; } }
 
     Skeleton GetSkeleton() {
         Skeleton skeleton = new Skeleton();
@@ -177,10 +186,34 @@ public class CharacterCreator : MonoBehaviour {
 
         ChainLineRenderer.ApplyLineRenderer(mSkeleton.root, 0.05f);
 
-        mSkeletonToPMMap = new PhysicsModel.SkeletonToPhysicsModelAnglesMap(mSkeleton.GetLocalAnglesOrder(), mPhysicsModel.GetAnglesOrder(), 
-            mSkeleton.GetLocalAngles(), mPhysicsModel.GetTargetAngles());
+        mSkeletonToPMMap = new PhysicsModel.SkeletonToPhysicsModelAnglesMap(mSkeleton.GetLocalAnglesOrder(), mPhysicsModel.GetAnglesOrder());
 
-        mPhysicsModel.SetAngleLimits(mSkeletonToPMMap.ConvertAngleLimits(AngleLimits));
+        mPMRootTranform = mPhysicsModel.GetObjectByName("Pelvis").transform;
+
+        Time.timeScale = 0.0f;
+    }
+
+    bool mPaused = true;
+
+    public void Clicked() {
+        mPaused = !mPaused;
+
+        if (mPaused) {
+            Time.timeScale = 0.0f;
+            mSkeleton.root.startPoint = mPMRootTranform.position;
+            mSkeleton.root.worldAngle = new Quaternion2D(mPMRootTranform.rotation.eulerAngles.z);
+            mSkeleton.SetLocalAngles(mSkeletonToPMMap.ConvertPmToSkAngles(mPhysicsModel.GetAngles()));
+            mPelvisIKTarget.UpdatePosition();
+
+            LeftHandTargetObject.position = mLeftHandIKTarget.position;
+            RightHandTargetObject.position = mRightHandIKTarget.position;
+            Spine3TargetObject.position = mSpine3IKTarget.position;
+            LeftLegTargetObject.position = mLeftElbowIKTarget.position;
+            RightLegTargetObject.position = mRightElbowIKTarget.position;
+        } else {
+            mPhysicsModel.SetTargetAngles(mSkeletonToPMMap.ConvertSkToPmAngles(mSkeleton.GetLocalAngles()));
+            Time.timeScale = 1.0f;
+        }
     }
 
     void Update() {
@@ -190,6 +223,11 @@ public class CharacterCreator : MonoBehaviour {
         LeftLegTargetObject.position = mLeftElbowIKTarget.TryMoveTo(LeftLegTargetObject.position);
         RightLegTargetObject.position = mRightElbowIKTarget.TryMoveTo(RightLegTargetObject.position);
         mSkeleton.UpdateSkeleton();
-        mPhysicsModel.SetTargetAngles(mSkeletonToPMMap.ConvertAngles(mSkeleton.GetLocalAngles()));
+
+        LeftHandTargetObject.position = mLeftHandIKTarget.position;
+        RightHandTargetObject.position = mRightHandIKTarget.position;
+        Spine3TargetObject.position = mSpine3IKTarget.position;
+        LeftLegTargetObject.position = mLeftElbowIKTarget.position;
+        RightLegTargetObject.position = mRightElbowIKTarget.position;
     }
 }
