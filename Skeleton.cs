@@ -129,6 +129,10 @@ public class Skeleton {
             }
             return null;
         }
+
+        public override string ToString() {
+            return string.Format("name: {0}, angle: {2}", mName, mLocalAngle);
+        }
     }
 
     Bone mRoot;
