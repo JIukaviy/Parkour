@@ -107,11 +107,20 @@ public class IK {
             }
         }
 
+        public class IKTargetEventArgs : EventArgs {
+            public Vector2 position;
+            public IKTargetEventArgs(Vector2 Position) {
+                position = Position;
+            }
+        } 
+
         Vector2 mPosition;
         bool mAnchor;
         List<IKAndID> mBackwardIK;
         List<IKAndID> mForwardIK;
         int mIKCount;
+
+        public EventHandler<IKTargetEventArgs> OnPositionChange;
 
         public bool anchor {
             get {
@@ -145,6 +154,13 @@ public class IK {
             mBackwardIK.Add(new IKAndID(Ik, mIKCount));
             return new IKTargetID(this, mIKCount++);
         }
+
+        void SetPosition(Vector2 Position) {
+            mPosition = Position;
+            if (OnPositionChange != null) {
+                OnPositionChange.Invoke(this, new IKTargetEventArgs(mPosition));
+            }
+        }
         
         Vector2 TryMoveTo(Vector2 Target, int IkId) {
             foreach(IKAndID ikAndId in mBackwardIK) {
@@ -157,7 +173,7 @@ public class IK {
                     Target = ikAndId.ik.TryMoveStartTo(Target);
                 }
             }
-            mPosition = Target;
+            SetPosition(Target);
             return mPosition;
         }
 
@@ -170,7 +186,7 @@ public class IK {
         }
 
         void MoveTo(Vector2 Position, int IkId = -1) {
-            mPosition = Position;
+            SetPosition(Position);
 
             foreach (IKAndID ikAndId in mBackwardIK) {
                 if (ikAndId.id != IkId) {
