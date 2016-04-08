@@ -190,21 +190,21 @@ public class Skeleton {
         return localAnglesOrder;
     }
 
-    public float[] GetAngles() {
-        float[] res = new float[mBones.Count];
+    public Quaternion2D[] GetAngles() {
+        Quaternion2D[] res = new Quaternion2D[mBones.Count];
 
         for (int i = 0; i < mBones.Count; i++) {
-            res[i] = mBones[i].localAngle.euler;
+            res[i] = mBones[i].localAngle;
         }
 
         return res;
     }
 
-    public float[] GetLocalAngles() {
-        float[] res = new float[mBones.Count - 1];
+    public Quaternion2D[] GetLocalAngles() {
+        Quaternion2D[] res = new Quaternion2D[mBones.Count - 1];
 
         for (int i = 0; i < mBones.Count - 1; i++) {
-            res[i] = mBones[i + 1].localAngle.euler;
+            res[i] = mBones[i + 1].localAngle;
         }
 
         return res;

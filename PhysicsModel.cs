@@ -49,7 +49,7 @@ namespace PhysicsModel {
             mLayer = Layer;
         }
         
-        public GameObject AddGameObject(Vector2 Position, float Angle, IK.AngleLimits AngleLimits, float Mass, GameObject ParentGameObject, GameObject Prefab, string Name) {
+        public GameObject AddGameObject(Vector2 Position, Quaternion2D Angle, IK.AngleLimits AngleLimits, float Mass, GameObject ParentGameObject, GameObject Prefab, string Name) {
             GameObject prefabInstance = GameObject.Instantiate(Prefab);
             prefabInstance.transform.RotateAround(Vector3.zero, Vector3.forward, Angle);
             prefabInstance.transform.position += new Vector3(Position.x, Position.y);
@@ -72,7 +72,7 @@ namespace PhysicsModel {
                     HingeJoint2D joint = prefabInstance.GetComponent<HingeJoint2D>();
 
                     joint.autoConfigureConnectedAnchor = false;
-                    joint.limits = AngleLimits.ToJointAngleLimits2D();
+                    joint.limits = AngleLimits.ToInverseJointAngleLimits2D();
                     joint.connectedBody = ParentGameObject.GetComponent<Rigidbody2D>();
                     joint.anchor = prefabInstance.transform.InverseTransformPoint(Position);
                     joint.connectedAnchor = ParentGameObject.transform.InverseTransformPoint(Position);
@@ -93,19 +93,23 @@ namespace PhysicsModel {
             return new Dictionary<string, int>(mNameToId);
         }
 
-        public float GetAngleById(int Id) {
+        public Quaternion2D GetAngleById(int Id) {
             return mManipulators[Id].angle;
         }
 
-        public void SetTargetAngle(int Id, float Angle) {
+        public Quaternion2D GetTargetAngleById(int Id) {
+            return mManipulators[Id].targetAngle;
+        }
+
+        public void SetTargetAngle(int Id, Quaternion2D Angle) {
             mManipulators[Id].targetAngle = Angle;
         }
 
-        public void SetTargetAngle(string Name, float Angle) {
-            mManipulators[GetIdByName(Name)].targetAngle = Angle;
+        public void SetTargetAngle(string Name, Quaternion2D Angle) {
+            SetTargetAngle(GetIdByName(Name), Angle);
         }
 
-        public void SetTargetAngles(float[] Angles) {
+        public void SetTargetAngles(Quaternion2D[] Angles) {
             if (Angles.Length != mManipulators.Count) {
                 throw new WrongCountOfAnglesException(mManipulators.Count, Angles.Length);
             }
@@ -118,8 +122,8 @@ namespace PhysicsModel {
         public float[] GetTargetAngles() {
             float[] res = new float[mManipulators.Count];
 
-            for(int i = 0; i < res.Length; i++) {
-                res[i] = mManipulators[i].angle;
+            for (int i = 0; i < res.Length; i++) {
+                res[i] = GetTargetAngleById(i);
             }
 
             return res;
@@ -165,7 +169,7 @@ namespace PhysicsModel {
         }
 
         public void CreatePhysicsModel(Skeleton.Bone Bone, GameObject Parent, PhysicsModel Model) {
-            GameObject newGameObject = Model.AddGameObject(Bone.startPoint, Bone.worldAngle.euler, mAngleLimits[Bone.name], mMasses[Bone.name],
+            GameObject newGameObject = Model.AddGameObject(Bone.startPoint, Bone.worldAngle, mAngleLimits[Bone.name], mMasses[Bone.name],
                 Parent, mPrefabs[Bone.name], Bone.name);
             foreach(Skeleton.Bone bone in Bone.childs) {
                 CreatePhysicsModel(bone, newGameObject, Model);
@@ -180,43 +184,44 @@ namespace PhysicsModel {
     }
 
     public class SkeletonToPhysicsModelAnglesMap {
-        int[] mMap;
-        float[] mOffsets;
+        int[] mSkToPmMap;
+        int[] mPmToSkMap;
         Dictionary<string, int> mSkeletonNames;
         Dictionary<string, int> mPMNames;
 
-        public SkeletonToPhysicsModelAnglesMap(Dictionary<string, int> SkeletonNames, Dictionary<string, int> PMNames, float[] SkeletonAngles, float[] PMAngles) {
-            mMap = new int[PMNames.Count];
+        public SkeletonToPhysicsModelAnglesMap(Dictionary<string, int> SkeletonNames, Dictionary<string, int> PMNames) {
+            mSkToPmMap = new int[PMNames.Count];
+            mPmToSkMap = new int[SkeletonNames.Count];
 
-            foreach(KeyValuePair<string, int> kv in PMNames) {
-                mMap[kv.Value] = SkeletonNames[kv.Key];
+            foreach (KeyValuePair<string, int> kv in PMNames) {
+                mSkToPmMap[kv.Value] = SkeletonNames[kv.Key];
             }
 
-            mOffsets = new float[PMAngles.Length];
-
-            for (int i = 0; i < mOffsets.Length; i++) {
-                mOffsets[i] = PMAngles[i] - SkeletonAngles[mMap[i]];
+            foreach (KeyValuePair<string, int> kv in SkeletonNames) {
+                int t;
+                mPmToSkMap[kv.Value] = PMNames.TryGetValue(kv.Key, out t) ? t : -1;
             }
 
             mSkeletonNames = SkeletonNames;
             mPMNames = PMNames;
         }
 
-        public float[] ConvertAngles(float[] Angles) {
-            float[] res = new float[mMap.Length];
+        public Quaternion2D[] ConvertSkToPmAngles(Quaternion2D[] Angles) {
+            Quaternion2D[] res = new Quaternion2D[mSkToPmMap.Length];
 
-            for (int i = 0; i < mMap.Length; i++) {
-                res[i] = -Angles[mMap[i]] - mOffsets[i];
+            for (int i = 0; i < mSkToPmMap.Length; i++) {
+                res[i] = Angles[mSkToPmMap[i]];
             }
 
             return res;
         }
 
-        public Dictionary<string, IK.AngleLimits> ConvertAngleLimits(Dictionary<string, IK.AngleLimits> Limits) {
-            Dictionary<string, IK.AngleLimits> res = new Dictionary<string, IK.AngleLimits>();
+        public Quaternion2D[] ConvertPmToSkAngles(Quaternion2D[] Angles) {
+            Quaternion2D[] res = new Quaternion2D[mPmToSkMap.Length];
 
-            foreach(KeyValuePair<string, int> kv in mPMNames) {
-                res[kv.Key] = new IK.AngleLimits(-Limits[kv.Key].maxAngle.euler - mOffsets[kv.Value], -Limits[kv.Key].minAngle.euler - mOffsets[kv.Value]);
+            for (int i = 0; i < mPmToSkMap.Length; i++) {
+                int id = mPmToSkMap[i];
+                res[i] = id >= 0 ? Angles[id] : new Quaternion2D();
             }
 
             return res;
