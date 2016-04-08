@@ -61,6 +61,13 @@ public class IK {
             return res;
         }
 
+        public JointAngleLimits2D ToInverseJointAngleLimits2D() {
+            JointAngleLimits2D res = new JointAngleLimits2D();
+            res.max = Quaternion2D.Inverse(mMinAngle);
+            res.min = Quaternion2D.Inverse(mMaxAngle);
+            return res;
+        }
+
         public Quaternion2D ChainAngle(Quaternion2D Angle) {
             float cos = Quaternion2D.CosBetween(mMiddle, Angle);
             if (cos > mCosLimit) {
@@ -170,6 +177,7 @@ public class IK {
                     ikAndId.ik.UpdateTargetPositions();
                 }
             }
+
             foreach (IKAndID ikAndId in mForwardIK) {
                 if (ikAndId.id != IkId) {
                     ikAndId.ik.UpdateTargetPositions();
