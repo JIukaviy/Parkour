@@ -129,6 +129,10 @@ public class Quaternion2D {
         return new Quaternion(e.mCos, e.mSin, 0, 0);
     }
 
+    public static implicit operator float(Quaternion2D e) {
+        return e.euler;
+    }
+
     public static Quaternion2D operator*(Quaternion2D a, Quaternion2D b) {
         return Rotate(a, b);
     }
