@@ -195,6 +195,14 @@ public class CharacterCreator : MonoBehaviour {
 
         mPMRootTranform = mPhysicsModel.GetObjectByName("Pelvis").transform;
 
+        CreateIKTargetUI(mLeftHandIKTarget);
+        CreateIKTargetUI(mRightHandIKTarget);
+        CreateIKTargetUI(mSpine3IKTarget);
+        CreateIKTargetUI(mLeftElbowIKTarget);
+        CreateIKTargetUI(mRightElbowIKTarget);
+
+        mPelvisIKTarget.UpdatePosition();
+
         Time.timeScale = 0.0f;
     }
 
