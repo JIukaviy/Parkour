@@ -163,7 +163,12 @@ public class IK {
         }
         
         Vector2 TryMoveTo(Vector2 Target, int IkId) {
-            foreach(IKAndID ikAndId in mBackwardIK) {
+            foreach (IKAndID ikAndId in mForwardIK) {
+                if (ikAndId.id != IkId) {
+                    Target = ikAndId.ik.TryMoveStartTo(Target);
+                }
+            }
+            foreach (IKAndID ikAndId in mBackwardIK) {
                 if (ikAndId.id != IkId) {
                     Target = ikAndId.ik.TryMoveEndTo(Target);
                 }
