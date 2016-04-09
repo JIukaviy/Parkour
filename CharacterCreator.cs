@@ -128,30 +128,30 @@ public class CharacterCreator : MonoBehaviour {
         return res;
     }
 
-    Dictionary<string, float> GetMasses() {
+    Dictionary<string, float> GetMasses(float Mass) {
         Dictionary<string, float> res = new Dictionary<string, float>();
 
-        res["Pelvis"] = 8.17f;
+        res["Pelvis"] = Mass * 0.1075f;
 
-        res["Spine1"] = 8.17f;
-        res["Spine2"] = 8.14f;
-        res["Spine3"] = 8.17f;
+        res["Spine1"] = Mass * 0.1075f;
+        res["Spine2"] = Mass * 0.1075f;
+        res["Spine3"] = Mass * 0.1075f;
 
-        res["Head"] = 5.32f;
+        res["Head"] = Mass * 0.07f;
 
-        res["LeftShoulder"] = 2.28f;
-        res["LeftArm"] = 1.52f;
-        res["LeftHand"] = 0.76f;
+        res["LeftShoulder"] = Mass * 0.03f;
+        res["LeftArm"] = Mass * 0.03f;
+        res["LeftHand"] = Mass * 0.01f;
 
-        res["RightShoulder"] = 2.28f;
-        res["RightArm"] = 1.52f;
-        res["RightHand"] = 0.76f;
+        res["RightShoulder"] = Mass * 0.03f;
+        res["RightArm"] = Mass * 0.03f;
+        res["RightHand"] = Mass * 0.01f;
 
-        res["LeftHip"] = 9.12f;
-        res["LeftElbow"] = 3.8f;
+        res["LeftHip"] = Mass * 0.12f;
+        res["LeftElbow"] = Mass * 0.05f;
 
-        res["RightHip"] = 9.12f;
-        res["RightElbow"] = 3.8f;
+        res["RightHip"] = Mass * 0.12f;
+        res["RightElbow"] = Mass * 0.05f;
 
         return res;
     }
@@ -169,7 +169,7 @@ public class CharacterCreator : MonoBehaviour {
 
         Dictionary<string, IK.AngleLimits> AngleLimits = GetAngleLimits();
         Dictionary<string, GameObject> Prefabs = GetPrefabs();
-        Dictionary<string, float> Masses = GetMasses();
+        Dictionary<string, float> Masses = GetMasses(1);
 
         PhysicsModel.PhysicsModelFromSkeletonCreator PhysicsModelFromSkeletonCreator = 
             new PhysicsModel.PhysicsModelFromSkeletonCreator(mSkeleton.root, AngleLimits, Masses, Prefabs, LayerMask.NameToLayer("Character"));
