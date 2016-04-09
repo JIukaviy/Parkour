@@ -18,11 +18,8 @@ public class CharacterCreator : MonoBehaviour {
     public GameObject RightHipPrefab;
     public GameObject RightElbowPrefab;
 
-    public Transform LeftHandTargetObject;
-    public Transform RightHandTargetObject;
-    public Transform Spine3TargetObject;
-    public Transform LeftLegTargetObject;
-    public Transform RightLegTargetObject;
+    public GameObject IKTargetPrefab;
+    public Transform CanvasTransform;
 
     Skeleton mSkeleton;
     IK mLeftArmIK;
@@ -159,6 +156,14 @@ public class CharacterCreator : MonoBehaviour {
         return res;
     }
 
+    void CreateIKTargetUI(IK.IKTarget Target) {
+        GameObject gameObject = Instantiate(IKTargetPrefab);
+        IKTargetUI targetUI = gameObject.GetComponent<IKTargetUI>();
+        targetUI.IKTarget = Target;
+        targetUI.skeleton = mSkeleton;
+        gameObject.transform.SetParent(CanvasTransform, false);
+    }
+
     void Start () {
         mSkeleton = GetSkeleton();
 
@@ -204,12 +209,6 @@ public class CharacterCreator : MonoBehaviour {
             mSkeleton.root.worldAngle = new Quaternion2D(mPMRootTranform.rotation.eulerAngles.z);
             mSkeleton.SetLocalAngles(mSkeletonToPMMap.ConvertPmToSkAngles(mPhysicsModel.GetAngles()));
             mPelvisIKTarget.UpdatePosition();
-
-            LeftHandTargetObject.position = mLeftHandIKTarget.position;
-            RightHandTargetObject.position = mRightHandIKTarget.position;
-            Spine3TargetObject.position = mSpine3IKTarget.position;
-            LeftLegTargetObject.position = mLeftElbowIKTarget.position;
-            RightLegTargetObject.position = mRightElbowIKTarget.position;
         } else {
             mPhysicsModel.SetTargetAngles(mSkeletonToPMMap.ConvertSkToPmAngles(mSkeleton.GetLocalAngles()));
             Time.timeScale = 1.0f;
@@ -217,17 +216,6 @@ public class CharacterCreator : MonoBehaviour {
     }
 
     void Update() {
-        LeftHandTargetObject.position = mLeftHandIKTarget.TryMoveTo(LeftHandTargetObject.position);
-        RightHandTargetObject.position = mRightHandIKTarget.TryMoveTo(RightHandTargetObject.position);
-        Spine3TargetObject.position = mSpine3IKTarget.TryMoveTo(Spine3TargetObject.position);
-        LeftLegTargetObject.position = mLeftElbowIKTarget.TryMoveTo(LeftLegTargetObject.position);
-        RightLegTargetObject.position = mRightElbowIKTarget.TryMoveTo(RightLegTargetObject.position);
-        mSkeleton.UpdateSkeleton();
-
-        LeftHandTargetObject.position = mLeftHandIKTarget.position;
-        RightHandTargetObject.position = mRightHandIKTarget.position;
-        Spine3TargetObject.position = mSpine3IKTarget.position;
-        LeftLegTargetObject.position = mLeftElbowIKTarget.position;
-        RightLegTargetObject.position = mRightElbowIKTarget.position;
+        
     }
 }
