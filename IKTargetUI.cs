@@ -7,6 +7,7 @@ public class IKTargetUI : MonoBehaviour, IDragHandler {
     IK.IKTarget mTarget;
     RectTransform rectTransform;
     Skeleton mSkeleton;
+    
 
     public IK.IKTarget IKTarget {
         get { return mTarget; }
@@ -32,9 +33,19 @@ public class IKTargetUI : MonoBehaviour, IDragHandler {
         rectTransform.position = Camera.main.WorldToScreenPoint(e.position);
     }
 
+    public void Show() {
+        gameObject.SetActive(true);
+    }
+
+    public void Hide() {
+        gameObject.SetActive(false);
+    }
+
     public void OnDrag(PointerEventData eventData) {
-        Vector2 worldPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        mTarget.TryMoveTo(mTarget.position + Vector2.ClampMagnitude(worldPosition - mTarget.position, 0.1f));
-        mSkeleton.UpdateSkeleton();
+        if (gameObject.activeSelf) {
+            Vector2 worldPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            mTarget.TryMoveTo(mTarget.position + Vector2.ClampMagnitude(worldPosition - mTarget.position, 0.1f));
+            mSkeleton.UpdateSkeleton();
+        }
     }
 }
