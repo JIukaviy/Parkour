@@ -150,6 +150,8 @@ public class CharacterCreator : MonoBehaviour {
     }
 
     void Start () {
+        Physics2D.gravity = new Vector2(0, -5);
+
         Dictionary<string, IK.AngleLimits> AngleLimits;
         Dictionary<string, PhysicsModel.PMObjectSettings> PMObjectSettings;
 
