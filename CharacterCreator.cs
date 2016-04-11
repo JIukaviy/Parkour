@@ -36,6 +36,7 @@ public class CharacterCreator : MonoBehaviour {
     PhysicsModel.PhysicsModel mPhysicsModel;
     PhysicsModel.SkeletonToPhysicsModelAnglesMap mSkeletonToPMMap;
     Transform mPMRootTranform;
+    List<IKTargetUI> mIKTargetUIList;
 
     public Skeleton skeleton { get { return mSkeleton; } }
     public IK.IKTarget leftArmIKTarget { get { return mLeftHandIKTarget; } }
@@ -157,11 +158,29 @@ public class CharacterCreator : MonoBehaviour {
     }
 
     void CreateIKTargetUI(IK.IKTarget Target) {
+        if (mIKTargetUIList == null) {
+            mIKTargetUIList = new List<IKTargetUI>();
+        }
         GameObject gameObject = Instantiate(IKTargetPrefab);
         IKTargetUI targetUI = gameObject.GetComponent<IKTargetUI>();
         targetUI.IKTarget = Target;
         targetUI.skeleton = mSkeleton;
+        mIKTargetUIList.Add(targetUI);
         gameObject.transform.SetParent(CanvasTransform, false);
+    }
+
+    void ShowUI() {
+        foreach(IKTargetUI ui in mIKTargetUIList) {
+            ui.Show();
+        }
+        ChainLineRenderer.ShowAll();
+    }
+
+    void HideUI() {
+        foreach (IKTargetUI ui in mIKTargetUIList) {
+            ui.Hide();
+        }
+        ChainLineRenderer.HideAll();
     }
 
     void Start () {
@@ -217,13 +236,12 @@ public class CharacterCreator : MonoBehaviour {
             mSkeleton.root.worldAngle = new Quaternion2D(mPMRootTranform.rotation.eulerAngles.z);
             mSkeleton.SetLocalAngles(mSkeletonToPMMap.ConvertPmToSkAngles(mPhysicsModel.GetAngles()));
             mPelvisIKTarget.UpdatePosition();
+            ShowUI();
         } else {
             mPhysicsModel.SetTargetAngles(mSkeletonToPMMap.ConvertSkToPmAngles(mSkeleton.GetLocalAngles()));
+            ChainLineRenderer.HideAll();
+            HideUI();
             Time.timeScale = 1.0f;
         }
-    }
-
-    void Update() {
-        
     }
 }
