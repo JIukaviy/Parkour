@@ -15,8 +15,10 @@ public class CharacterCreator : MonoBehaviour {
     public GameObject HeadPrefab;
     public GameObject LeftHipPrefab;
     public GameObject LeftElbowPrefab;
+    public GameObject LeftFootPrefab;
     public GameObject RightHipPrefab;
     public GameObject RightElbowPrefab;
+    public GameObject RightFootPrefab;
 
     public GameObject IKTargetPrefab;
     public Transform CanvasTransform;
@@ -31,8 +33,8 @@ public class CharacterCreator : MonoBehaviour {
     IK.IKTarget mLeftHandIKTarget;
     IK.IKTarget mRightHandIKTarget;
     IK.IKTarget mPelvisIKTarget;
-    IK.IKTarget mLeftElbowIKTarget;
-    IK.IKTarget mRightElbowIKTarget;
+    IK.IKTarget mLeftLegIKTarget;
+    IK.IKTarget mRightLegIKTarget;
     PhysicsModel mPhysicsModel;
     PhysicsModel.SkeletonToPhysicsModelAnglesMap mSkeletonToPMMap;
     Transform mPMRootTranform;
@@ -43,8 +45,8 @@ public class CharacterCreator : MonoBehaviour {
     public IK.IKTarget rightArmIKTaret { get { return mRightHandIKTarget; } }
     public IK.IKTarget spineIKTarget { get { return mSpine3IKTarget; } }
     public IK.IKTarget pelvisIKTarget { get { return mPelvisIKTarget; } }
-    public IK.IKTarget leftElbowIKTarget { get { return mLeftElbowIKTarget; } }
-    public IK.IKTarget rightElbowIKTarget { get { return mRightElbowIKTarget; } }
+    public IK.IKTarget leftLegIKTarget { get { return mLeftLegIKTarget; } }
+    public IK.IKTarget rightLegIKTarget { get { return mRightLegIKTarget; } }
 
     void AddModelInfo(string Name, ref Dictionary<string, PhysicsModel.PMObjectSettings> PMObjectSettings, 
         ref Dictionary<string, IK.AngleLimits> AngleLimits, float lowerAngle, float upperAngle, Skeleton Sk,
@@ -89,9 +91,11 @@ public class CharacterCreator : MonoBehaviour {
 
         Skeleton.Bone LeftHipBone;
         Skeleton.Bone LeftElbowBone;
+        Skeleton.Bone LeftFootBone;
 
         Skeleton.Bone RightHipBone;
         Skeleton.Bone RightElbowBone;
+        Skeleton.Bone RightFootBone;
 
         AddModelInfo("Pelvis", ref PMObjectSettings, ref AngleLimits, Sk, out PelvisBone, null, 0, 90, PelvisPrefab, Mass * 0.1075f, Layer);
 
@@ -111,9 +115,11 @@ public class CharacterCreator : MonoBehaviour {
 
         AddModelInfo("LeftHip", ref PMObjectSettings, ref AngleLimits, -80, 150, Sk, out LeftHipBone, PelvisBone, 0.5f, -180, LeftHipPrefab, Mass * 0.12f, Layer);
         AddModelInfo("LeftElbow", ref PMObjectSettings, ref AngleLimits, -170, 0, Sk, out LeftElbowBone, LeftHipBone, 0.5f, 0, LeftElbowPrefab, Mass * 0.05f, Layer);
+        AddModelInfo("LeftFoot", ref PMObjectSettings, ref AngleLimits, -70, 40, Sk, out LeftFootBone, LeftElbowBone, 0.2f, 90, LeftFootPrefab, Mass * 0.02f, Layer);
 
         AddModelInfo("RightHip", ref PMObjectSettings, ref AngleLimits, -80, 150, Sk, out RightHipBone, PelvisBone, 0.5f, -180, RightHipPrefab, Mass * 0.12f, Layer);
         AddModelInfo("RightElbow", ref PMObjectSettings, ref AngleLimits, -170, 0, Sk, out RightElbowBone, RightHipBone, 0.5f, 0, RightElbowPrefab, Mass * 0.05f, Layer);
+        AddModelInfo("RightFoot", ref PMObjectSettings, ref AngleLimits, -70, 40, Sk, out RightFootBone, RightElbowBone, 0.2f, 90, RightFootPrefab, Mass * 0.02f, Layer);
     }
 
     void CreateIKTargetUI(IK.IKTarget Target) {
@@ -156,13 +162,14 @@ public class CharacterCreator : MonoBehaviour {
         mLeftHandIKTarget = new IK.IKTarget(mSkeleton.GetBoneByName("LeftHand").endPoint);
         mRightHandIKTarget = new IK.IKTarget(mSkeleton.GetBoneByName("RightHand").endPoint);
         mPelvisIKTarget = new IK.IKTarget(mSkeleton.GetBoneByName("Pelvis").endPoint);
-        mLeftElbowIKTarget = new IK.IKTarget(mSkeleton.GetBoneByName("LeftElbow").endPoint);
-        mRightElbowIKTarget = new IK.IKTarget(mSkeleton.GetBoneByName("RightElbow").endPoint);
+        mLeftLegIKTarget = new IK.IKTarget(mSkeleton.GetBoneByName("LeftElbow").endPoint);
+        mRightLegIKTarget = new IK.IKTarget(mSkeleton.GetBoneByName("RightElbow").endPoint);
+
         mLeftArmIK = new IK(mSkeleton, "Spine3", "LeftHand", AngleLimits, mSpine3IKTarget, mLeftHandIKTarget);
         mRightArmIK = new IK(mSkeleton, "Spine3", "RightHand", AngleLimits, mSpine3IKTarget, mRightHandIKTarget);
         mSpineIK = new IK(mSkeleton, "Pelvis", "Spine3", AngleLimits, mPelvisIKTarget, mSpine3IKTarget);
-        mRightLegIK = new IK(mSkeleton, "Pelvis", "RightElbow", AngleLimits, mPelvisIKTarget, mRightElbowIKTarget);
-        mLeftLegIK = new IK(mSkeleton, "Pelvis", "LeftElbow", AngleLimits, mPelvisIKTarget, mLeftElbowIKTarget);
+        mRightLegIK = new IK(mSkeleton, "Pelvis", "RightFoot", AngleLimits, mPelvisIKTarget, mRightLegIKTarget);
+        mLeftLegIK = new IK(mSkeleton, "Pelvis", "LeftFoot", AngleLimits, mPelvisIKTarget, mLeftLegIKTarget);
 
         mSpine3IKTarget.anchor = false;
 
@@ -175,8 +182,8 @@ public class CharacterCreator : MonoBehaviour {
         CreateIKTargetUI(mLeftHandIKTarget);
         CreateIKTargetUI(mRightHandIKTarget);
         CreateIKTargetUI(mSpine3IKTarget);
-        CreateIKTargetUI(mLeftElbowIKTarget);
-        CreateIKTargetUI(mRightElbowIKTarget);
+        CreateIKTargetUI(mLeftLegIKTarget);
+        CreateIKTargetUI(mRightLegIKTarget);
 
         mPelvisIKTarget.UpdatePosition();
 
