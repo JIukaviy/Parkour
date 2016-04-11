@@ -212,7 +212,7 @@ public class Skeleton {
 
     public void SetLocalAngles(Quaternion2D[] Angles) {
         if (Angles.Length != mBones.Count - 1) {
-            throw new PhysicsModel.PhysicsModel.WrongCountOfAnglesException(mBones.Count - 1, Angles.Length);
+            throw new PhysicsModel.WrongCountOfAnglesException(mBones.Count - 1, Angles.Length);
         }
 
         for (int i = 0; i < Angles.Length; i++) {
