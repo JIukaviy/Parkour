@@ -4,19 +4,8 @@ using System.Collections;
 public class Manipulator : MonoBehaviour {
     Quaternion2D mTargetAngle;
     public float multiplier;
-    public float maxSpeed;
-    public float P;
-    public float I;
-    public float D;
 
-    public float force {
-        get { return mJoint.motor.maxMotorTorque; }
-        set {
-            JointMotor2D motor = mJoint.motor;
-            motor.maxMotorTorque = value;
-            mJoint.motor = motor;
-        }
-    }
+    public float force { get { return mJoint.motor.maxMotorTorque; } }
 
     public Quaternion2D targetAngle {
         get { return mTargetAngle.Clone(); }
@@ -26,34 +15,22 @@ public class Manipulator : MonoBehaviour {
     public Quaternion2D angle { get { return new Quaternion2D(-mJoint.jointAngle); } }
 
     HingeJoint2D mJoint;
+    Rigidbody2D mRigidBody;
+    Transform mTransform;
 
-
-    public void Start() {
+    public void Awake() {
         mJoint = GetComponent<HingeJoint2D>();
         mTargetAngle = new Quaternion2D(mJoint.jointAngle);
-        multiplier = 0.01f;
-        maxSpeed = 20;
-        force = 200;
-        
-        intErr = 0;
-        prevErr = 0;
-
-        P = 1f;
-        I = 0f;
-        D = 3;
+        mRigidBody = GetComponent<Rigidbody2D>();
+        mTransform = GetComponent<Transform>();
     }
-    
-    float prevErr;
-    float intErr;
 
-    void Update() {
-        JointMotor2D motor = mJoint.motor;
-        float Err = targetAngle / angle;
-        float dErr = Err - prevErr;
-        float U = P * Err + I * intErr + D * dErr * Time.deltaTime;
-        motor.motorSpeed = -Err * 2 - D * dErr * Time.deltaTime;
-        prevErr = Err;
-        intErr += Err / Time.deltaTime;
+    void FixedUpdate() {
+        float Err = -targetAngle.euler - mJoint.jointAngle;
+        JointMotor2D motor = new JointMotor2D();
+        motor.maxMotorTorque = 0.03f;
+        motor.motorSpeed = Err * Err * Err * Time.fixedDeltaTime / 10;
+        //motor.motorSpeed = 50 * Err * Time.fixedDeltaTime;
         mJoint.motor = motor;
     }
 }
