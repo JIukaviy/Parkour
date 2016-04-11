@@ -3,9 +3,18 @@ using System.Collections.Generic;
 
 public class ChainLineRenderer : MonoBehaviour {
 
+    static List<ChainLineRenderer> mInstances;
+
     LineRenderer mRenderer;
     Skeleton.Bone mBone;
     float mWidth;
+
+    void Awake() {
+        if (mInstances == null) {
+            mInstances = new List<ChainLineRenderer>();
+        }
+        mInstances.Add(this);
+    }
 
     void Start() {
         gameObject.AddComponent<LineRenderer>();
@@ -28,6 +37,30 @@ public class ChainLineRenderer : MonoBehaviour {
                
         foreach(Skeleton.Bone bone in Bone.childs) {
             ApplyLineRenderer(bone, Width);
+        }
+    }
+    
+    public void Hide() {
+        gameObject.SetActive(false);
+    }
+
+    public void Show() {
+        gameObject.SetActive(true);
+    }
+
+    public static void HideAll() {
+        if (mInstances != null) {
+            foreach (ChainLineRenderer r in mInstances) {
+                r.Hide();
+            }
+        }
+    }
+
+    public static void ShowAll() {
+        if (mInstances != null) {
+            foreach (ChainLineRenderer r in mInstances) {
+                r.Show();
+            }
         }
     }
 }
