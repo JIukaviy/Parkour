@@ -33,7 +33,7 @@ public class CharacterCreator : MonoBehaviour {
     IK.IKTarget mPelvisIKTarget;
     IK.IKTarget mLeftElbowIKTarget;
     IK.IKTarget mRightElbowIKTarget;
-    PhysicsModel.PhysicsModel mPhysicsModel;
+    PhysicsModel mPhysicsModel;
     PhysicsModel.SkeletonToPhysicsModelAnglesMap mSkeletonToPMMap;
     Transform mPMRootTranform;
     List<IKTargetUI> mIKTargetUIList;
@@ -46,115 +46,74 @@ public class CharacterCreator : MonoBehaviour {
     public IK.IKTarget leftElbowIKTarget { get { return mLeftElbowIKTarget; } }
     public IK.IKTarget rightElbowIKTarget { get { return mRightElbowIKTarget; } }
 
-    Skeleton GetSkeleton() {
-        Skeleton skeleton = new Skeleton();
-
-        Skeleton.Bone pelvis = skeleton.AddBone(null, 0, 90, "Pelvis");
-
-        Skeleton.Bone spine1 = skeleton.AddBone(pelvis, 0.23f, 0, "Spine1");
-        Skeleton.Bone spine2 = skeleton.AddBone(spine1, 0.23f, 0, "Spine2");
-        Skeleton.Bone spine3 = skeleton.AddBone(spine2, 0.23f, 0, "Spine3");
-
-        Skeleton.Bone head = skeleton.AddBone(spine3, 0.3f, 0, "Head");
-
-        Skeleton.Bone leftShoulder = skeleton.AddBone(spine3, 0.5f, -180, "LeftShoulder");
-        Skeleton.Bone leftArm = skeleton.AddBone(leftShoulder, 0.5f, 0, "LeftArm");
-        Skeleton.Bone leftHand = skeleton.AddBone(leftArm, 0.15f, 0, "LeftHand");
-
-        Skeleton.Bone rightShoulder = skeleton.AddBone(spine3, 0.5f, -180, "RightShoulder");
-        Skeleton.Bone rightArm = skeleton.AddBone(rightShoulder, 0.5f, 0, "RightArm");
-        Skeleton.Bone rightHand = skeleton.AddBone(rightArm, 0.15f, 0, "RightHand");
-
-        Skeleton.Bone leftHip = skeleton.AddBone(pelvis, 0.5f, -180, "LeftHip");
-        Skeleton.Bone leftElbow = skeleton.AddBone(leftHip, 0.5f, 0, "LeftElbow");
-
-        Skeleton.Bone rightHip = skeleton.AddBone(pelvis, 0.5f, -180, "RightHip");
-        Skeleton.Bone rightElbow = skeleton.AddBone(rightHip, 0.5f, 0, "RightElbow");
-
-        skeleton.UpdateSkeleton();
-        return skeleton;
+    void AddModelInfo(string Name, ref Dictionary<string, PhysicsModel.PMObjectSettings> PMObjectSettings, 
+        ref Dictionary<string, IK.AngleLimits> AngleLimits, float lowerAngle, float upperAngle, Skeleton Sk,
+        out Skeleton.Bone Bone, Skeleton.Bone ParentBone, float Length, float OffsetAngle, GameObject Prefab, float Mass, int Layer) 
+    {
+        PMObjectSettings[Name] = new PhysicsModel.PMObjectSettings(lowerAngle, upperAngle, Prefab, Mass, Name, Layer);
+        AngleLimits[Name] = new IK.AngleLimits(lowerAngle, upperAngle);
+        Bone = Sk.AddBone(ParentBone, Length, OffsetAngle, Name);
     }
 
-    Dictionary<string, IK.AngleLimits> GetAngleLimits() {
-        Dictionary<string, IK.AngleLimits> res = new Dictionary<string, IK.AngleLimits>();
-        res["Pelvis"] = null;
-
-        res["Spine1"] = new IK.AngleLimits(0, 0);
-        res["Spine2"] = new IK.AngleLimits(-20, 20);
-        res["Spine3"] = new IK.AngleLimits(-20, 20);
-
-        res["Head"] = new IK.AngleLimits(-20, 20);
-
-        res["LeftShoulder"] = new IK.AngleLimits(-130, 160);
-        res["LeftArm"] = new IK.AngleLimits(0, 170);
-        res["LeftHand"] = new IK.AngleLimits(-20, 20);
-
-        res["RightShoulder"] = new IK.AngleLimits(-130, 160);
-        res["RightArm"] = new IK.AngleLimits(0, 170);
-        res["RightHand"] = new IK.AngleLimits(-20, 20);
-
-        res["LeftHip"] = new IK.AngleLimits(-80, 150);
-        res["LeftElbow"] = new IK.AngleLimits(-170, 0);
-
-        res["RightHip"] = new IK.AngleLimits(-80, 150);
-        res["RightElbow"] = new IK.AngleLimits(-170, 0);
-
-        return res;
+    void AddModelInfo(string Name, ref Dictionary<string, PhysicsModel.PMObjectSettings> PMObjectSettings,
+        ref Dictionary<string, IK.AngleLimits> AngleLimits, Skeleton Sk,
+        out Skeleton.Bone Bone, Skeleton.Bone ParentBone, float Length, float OffsetAngle, GameObject Prefab, float Mass, int Layer) 
+    {
+        PMObjectSettings[Name] = new PhysicsModel.PMObjectSettings(Prefab, Mass, Name, Layer);
+        AngleLimits[Name] = null;
+        Bone = Sk.AddBone(ParentBone, Length, OffsetAngle, Name);
     }
 
-    Dictionary<string, GameObject> GetPrefabs() {
-        Dictionary<string, GameObject> res = new Dictionary<string, GameObject>();
-        res["Pelvis"] = PelvisPrefab;
+    void GetModelInfo(float Mass, int Layer, out Dictionary<string, IK.AngleLimits> AngleLimits, 
+        out Skeleton Sk, out Dictionary<string, PhysicsModel.PMObjectSettings> PMObjectSettings) 
+    {
+        PMObjectSettings = new Dictionary<string, PhysicsModel.PMObjectSettings>();
+        AngleLimits = new Dictionary<string, IK.AngleLimits>();
+        Sk = new Skeleton();
 
-        res["Spine1"] = Spine1Prefab;
-        res["Spine2"] = Spine2Prefab;
-        res["Spine3"] = Spine3Prefab;
+        Skeleton.Bone PelvisBone;
 
-        res["Head"] = HeadPrefab;
+        Skeleton.Bone Spine1Bone;
+        Skeleton.Bone Spine2Bone;
+        Skeleton.Bone Spine3Bone;
 
-        res["LeftShoulder"] = LeftShoulderPrefab;
-        res["LeftArm"] = LeftArmPrefab;
-        res["LeftHand"] = LeftHandPrefab;
+        Skeleton.Bone HeadBone;
 
-        res["RightShoulder"] = RightShoulderPrefab;
-        res["RightArm"] = RightArmPrefab;
-        res["RightHand"] = RightHandPrefab;
+        Skeleton.Bone LeftShoulderBone;
+        Skeleton.Bone LeftArmBone;
+        Skeleton.Bone LeftHandBone;
 
-        res["LeftHip"] = LeftHipPrefab;
-        res["LeftElbow"] = LeftElbowPrefab;
+        Skeleton.Bone RightShoulderBone;
+        Skeleton.Bone RightArmBone;
+        Skeleton.Bone RightHandBone;
 
-        res["RightHip"] = RightHipPrefab;
-        res["RightElbow"] = RightElbowPrefab;
+        Skeleton.Bone LeftHipBone;
+        Skeleton.Bone LeftElbowBone;
 
-        return res;
-    }
+        Skeleton.Bone RightHipBone;
+        Skeleton.Bone RightElbowBone;
 
-    Dictionary<string, float> GetMasses(float Mass) {
-        Dictionary<string, float> res = new Dictionary<string, float>();
+        AddModelInfo("Pelvis", ref PMObjectSettings, ref AngleLimits, Sk, out PelvisBone, null, 0, 90, PelvisPrefab, Mass * 0.1075f, Layer);
 
-        res["Pelvis"] = Mass * 0.1075f;
+        AddModelInfo("Spine1", ref PMObjectSettings, ref AngleLimits, -20, 20, Sk, out Spine1Bone, PelvisBone, 0.23f, 0, Spine1Prefab, Mass * 0.1075f, Layer);
+        AddModelInfo("Spine2", ref PMObjectSettings, ref AngleLimits, -20, 20, Sk, out Spine2Bone, Spine1Bone, 0.23f, 0, Spine2Prefab, Mass * 0.1075f, Layer);
+        AddModelInfo("Spine3", ref PMObjectSettings, ref AngleLimits, -20, 20, Sk, out Spine3Bone, Spine2Bone, 0.23f, 0, Spine3Prefab, Mass * 0.1075f, Layer);
 
-        res["Spine1"] = Mass * 0.1075f;
-        res["Spine2"] = Mass * 0.1075f;
-        res["Spine3"] = Mass * 0.1075f;
+        AddModelInfo("Head", ref PMObjectSettings, ref AngleLimits, -20, 20, Sk, out HeadBone, Spine3Bone, 0.23f, 0, HeadPrefab, Mass * 0.07f, Layer);
 
-        res["Head"] = Mass * 0.07f;
+        AddModelInfo("LeftShoulder", ref PMObjectSettings, ref AngleLimits, -130, 160, Sk, out LeftShoulderBone, Spine3Bone, 0.5f, -180, LeftShoulderPrefab, Mass * 0.03f, Layer);
+        AddModelInfo("LeftArm", ref PMObjectSettings, ref AngleLimits, 0, 170, Sk, out LeftArmBone, LeftShoulderBone, 0.5f, 0, LeftArmPrefab, Mass * 0.03f, Layer);
+        AddModelInfo("LeftHand", ref PMObjectSettings, ref AngleLimits, -20, 20, Sk, out LeftHandBone, LeftArmBone, 0.15f, 0, LeftHandPrefab, Mass * 0.01f, Layer);
 
-        res["LeftShoulder"] = Mass * 0.03f;
-        res["LeftArm"] = Mass * 0.03f;
-        res["LeftHand"] = Mass * 0.01f;
+        AddModelInfo("RightShoulder", ref PMObjectSettings, ref AngleLimits, -130, 160, Sk, out RightShoulderBone, Spine3Bone, 0.5f, -180, RightShoulderPrefab, Mass * 0.03f, Layer);
+        AddModelInfo("RightArm", ref PMObjectSettings, ref AngleLimits, 0, 170, Sk, out RightArmBone, RightShoulderBone, 0.5f, 0, RightArmPrefab, Mass * 0.03f, Layer);
+        AddModelInfo("RightHand", ref PMObjectSettings, ref AngleLimits, -20, 20, Sk, out RightHandBone, RightArmBone, 0.15f, 0, RightHandPrefab, Mass * 0.01f, Layer);
 
-        res["RightShoulder"] = Mass * 0.03f;
-        res["RightArm"] = Mass * 0.03f;
-        res["RightHand"] = Mass * 0.01f;
+        AddModelInfo("LeftHip", ref PMObjectSettings, ref AngleLimits, -80, 150, Sk, out LeftHipBone, PelvisBone, 0.5f, -180, LeftHipPrefab, Mass * 0.12f, Layer);
+        AddModelInfo("LeftElbow", ref PMObjectSettings, ref AngleLimits, -170, 0, Sk, out LeftElbowBone, LeftHipBone, 0.5f, 0, LeftElbowPrefab, Mass * 0.05f, Layer);
 
-        res["LeftHip"] = Mass * 0.12f;
-        res["LeftElbow"] = Mass * 0.05f;
-
-        res["RightHip"] = Mass * 0.12f;
-        res["RightElbow"] = Mass * 0.05f;
-
-        return res;
+        AddModelInfo("RightHip", ref PMObjectSettings, ref AngleLimits, -80, 150, Sk, out RightHipBone, PelvisBone, 0.5f, -180, RightHipPrefab, Mass * 0.12f, Layer);
+        AddModelInfo("RightElbow", ref PMObjectSettings, ref AngleLimits, -170, 0, Sk, out RightElbowBone, RightHipBone, 0.5f, 0, RightElbowPrefab, Mass * 0.05f, Layer);
     }
 
     void CreateIKTargetUI(IK.IKTarget Target) {
@@ -184,14 +143,13 @@ public class CharacterCreator : MonoBehaviour {
     }
 
     void Start () {
-        mSkeleton = GetSkeleton();
+        Dictionary<string, IK.AngleLimits> AngleLimits;
+        Dictionary<string, PhysicsModel.PMObjectSettings> PMObjectSettings;
 
-        Dictionary<string, IK.AngleLimits> AngleLimits = GetAngleLimits();
-        Dictionary<string, GameObject> Prefabs = GetPrefabs();
-        Dictionary<string, float> Masses = GetMasses(1);
+        GetModelInfo(0.01f, LayerMask.NameToLayer("Character"), out AngleLimits, out mSkeleton, out PMObjectSettings);
 
         PhysicsModel.PhysicsModelFromSkeletonCreator PhysicsModelFromSkeletonCreator = 
-            new PhysicsModel.PhysicsModelFromSkeletonCreator(mSkeleton.root, AngleLimits, Masses, Prefabs, LayerMask.NameToLayer("Character"));
+            new PhysicsModel.PhysicsModelFromSkeletonCreator(mSkeleton.root, PMObjectSettings);
         mPhysicsModel = PhysicsModelFromSkeletonCreator.GetPhysicsModel();
 
         mSpine3IKTarget = new IK.IKTarget(mSkeleton.GetBoneByName("Spine3").endPoint);
