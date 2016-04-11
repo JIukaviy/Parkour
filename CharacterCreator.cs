@@ -22,6 +22,7 @@ public class CharacterCreator : MonoBehaviour {
 
     public GameObject IKTargetPrefab;
     public Transform CanvasTransform;
+    public GameObject MainCamera;
 
     Skeleton mSkeleton;
     IK mLeftArmIK;
@@ -186,6 +187,11 @@ public class CharacterCreator : MonoBehaviour {
         CreateIKTargetUI(mRightLegIKTarget);
 
         mPelvisIKTarget.UpdatePosition();
+
+        TargetFollower targetFollower = MainCamera.AddComponent<TargetFollower>();
+        targetFollower.Target = mPhysicsModel.GetObjectByName("Pelvis").GetComponent<Transform>();
+        targetFollower.zDistance = -10;
+        targetFollower.Speed = 0.1f;
 
         Time.timeScale = 0.0f;
     }

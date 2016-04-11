@@ -5,9 +5,8 @@ using System;
 
 public class IKTargetUI : MonoBehaviour, IDragHandler {
     IK.IKTarget mTarget;
-    RectTransform rectTransform;
+    RectTransform mTransform;
     Skeleton mSkeleton;
-    
 
     public IK.IKTarget IKTarget {
         get { return mTarget; }
@@ -26,11 +25,11 @@ public class IKTargetUI : MonoBehaviour, IDragHandler {
     }
 
     void Awake() {
-        rectTransform = GetComponent<RectTransform>();
+        mTransform = GetComponent<RectTransform>();
     }
 
     public void OnTargetPosChanged(object sender, IK.IKTarget.IKTargetEventArgs e) {
-        rectTransform.position = Camera.main.WorldToScreenPoint(e.position);
+        mTransform.position = Camera.main.WorldToScreenPoint(e.position);
     }
 
     public void Show() {
@@ -47,5 +46,9 @@ public class IKTargetUI : MonoBehaviour, IDragHandler {
             mTarget.TryMoveTo(mTarget.position + Vector2.ClampMagnitude(worldPosition - mTarget.position, 0.1f));
             mSkeleton.UpdateSkeleton();
         }
+    }
+
+    public void Update() {
+        mTransform.position = Camera.main.WorldToScreenPoint(mTarget.position);
     }
 }
