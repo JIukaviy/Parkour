@@ -14,6 +14,23 @@ public class Manipulator : MonoBehaviour {
 
     public Quaternion2D angle { get { return new Quaternion2D(-mJoint.jointAngle); } }
 
+    public Quaternion2D referenceAngle {
+        get {
+            return new Quaternion2D(mJoint.referenceAngle);
+        }
+        set {
+            Rigidbody2D rigidBody = mJoint.connectedBody;
+            Quaternion rotation = mTransform.rotation;
+            Vector3 position = mTransform.position;
+            float parentAngle = rigidBody.gameObject.GetComponent<Transform>().rotation.eulerAngles.z;
+            mTransform.rotation = new Quaternion();
+            mTransform.RotateAround(mTransform.TransformPoint(mJoint.anchor), Vector3.forward, parentAngle - value);
+            mJoint.connectedBody = rigidBody;
+            mTransform.position = position;
+            mTransform.rotation = rotation;
+        }
+    }
+
     HingeJoint2D mJoint;
     Rigidbody2D mRigidBody;
     Transform mTransform;
