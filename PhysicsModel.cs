@@ -115,11 +115,11 @@ public class PhysicsModel {
     }
 
     public Quaternion2D GetAngleById(int Id) {
-        return mManipulators[Id].angle;
+        return new Quaternion2D(mManipulators[Id].angle);
     }
 
     public Quaternion2D GetTargetAngleById(int Id) {
-        return mManipulators[Id].targetAngle;
+        return new Quaternion2D(mManipulators[Id].targetAngle);
     }
 
     public void SetTargetAngle(int Id, Quaternion2D Angle) {
