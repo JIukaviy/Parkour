@@ -51,23 +51,23 @@ public class CharacterCreator : MonoBehaviour {
 
     void AddModelInfo(string Name, ref Dictionary<string, PhysicsModel.PMObjectSettings> PMObjectSettings, 
         ref Dictionary<string, IK.AngleLimits> AngleLimits, float lowerAngle, float upperAngle, Skeleton Sk,
-        out Skeleton.Bone Bone, Skeleton.Bone ParentBone, float Length, float OffsetAngle, GameObject Prefab, float Mass, int Layer) 
+        out Skeleton.Bone Bone, Skeleton.Bone ParentBone, float Length, float OffsetAngle, GameObject Prefab, float Mass, int Layer, string Tag) 
     {
-        PMObjectSettings[Name] = new PhysicsModel.PMObjectSettings(lowerAngle, upperAngle, Prefab, Mass, Name, Layer);
+        PMObjectSettings[Name] = new PhysicsModel.PMObjectSettings(lowerAngle, upperAngle, Prefab, Mass, Name, Layer, Tag);
         AngleLimits[Name] = new IK.AngleLimits(lowerAngle, upperAngle);
         Bone = Sk.AddBone(ParentBone, Length, OffsetAngle, Name);
     }
 
     void AddModelInfo(string Name, ref Dictionary<string, PhysicsModel.PMObjectSettings> PMObjectSettings,
         ref Dictionary<string, IK.AngleLimits> AngleLimits, Skeleton Sk,
-        out Skeleton.Bone Bone, Skeleton.Bone ParentBone, float Length, float OffsetAngle, GameObject Prefab, float Mass, int Layer) 
+        out Skeleton.Bone Bone, Skeleton.Bone ParentBone, float Length, float OffsetAngle, GameObject Prefab, float Mass, int Layer, string Tag) 
     {
-        PMObjectSettings[Name] = new PhysicsModel.PMObjectSettings(Prefab, Mass, Name, Layer);
+        PMObjectSettings[Name] = new PhysicsModel.PMObjectSettings(Prefab, Mass, Name, Layer, Tag); 
         AngleLimits[Name] = null;
         Bone = Sk.AddBone(ParentBone, Length, OffsetAngle, Name);
     }
 
-    void GetModelInfo(float Mass, int Layer, out Dictionary<string, IK.AngleLimits> AngleLimits, 
+    void GetModelInfo(float Mass, int Layer, string Tag, out Dictionary<string, IK.AngleLimits> AngleLimits, 
         out Skeleton Sk, out Dictionary<string, PhysicsModel.PMObjectSettings> PMObjectSettings) 
     {
         PMObjectSettings = new Dictionary<string, PhysicsModel.PMObjectSettings>();
@@ -98,29 +98,29 @@ public class CharacterCreator : MonoBehaviour {
         Skeleton.Bone RightElbowBone;
         Skeleton.Bone RightFootBone;
 
-        AddModelInfo("Pelvis", ref PMObjectSettings, ref AngleLimits, Sk, out PelvisBone, null, 0, 90, PelvisPrefab, Mass * 0.1075f, Layer);
+        AddModelInfo("Pelvis", ref PMObjectSettings, ref AngleLimits, Sk, out PelvisBone, null, 0, 90, PelvisPrefab, Mass * 0.1075f, Layer, Tag);
 
-        AddModelInfo("Spine1", ref PMObjectSettings, ref AngleLimits, -20, 20, Sk, out Spine1Bone, PelvisBone, 0.23f, 0, Spine1Prefab, Mass * 0.1075f, Layer);
-        AddModelInfo("Spine2", ref PMObjectSettings, ref AngleLimits, -20, 20, Sk, out Spine2Bone, Spine1Bone, 0.23f, 0, Spine2Prefab, Mass * 0.1075f, Layer);
-        AddModelInfo("Spine3", ref PMObjectSettings, ref AngleLimits, -20, 20, Sk, out Spine3Bone, Spine2Bone, 0.23f, 0, Spine3Prefab, Mass * 0.1075f, Layer);
+        AddModelInfo("Spine1", ref PMObjectSettings, ref AngleLimits, -20, 20, Sk, out Spine1Bone, PelvisBone, 0.23f, 0, Spine1Prefab, Mass * 0.1075f, Layer, Tag);
+        AddModelInfo("Spine2", ref PMObjectSettings, ref AngleLimits, -20, 20, Sk, out Spine2Bone, Spine1Bone, 0.23f, 0, Spine2Prefab, Mass * 0.1075f, Layer, Tag);
+        AddModelInfo("Spine3", ref PMObjectSettings, ref AngleLimits, -20, 20, Sk, out Spine3Bone, Spine2Bone, 0.23f, 0, Spine3Prefab, Mass * 0.1075f, Layer, Tag);
 
-        AddModelInfo("Head", ref PMObjectSettings, ref AngleLimits, -20, 20, Sk, out HeadBone, Spine3Bone, 0.23f, 0, HeadPrefab, Mass * 0.07f, Layer);
+        AddModelInfo("Head", ref PMObjectSettings, ref AngleLimits, -20, 20, Sk, out HeadBone, Spine3Bone, 0.23f, 0, HeadPrefab, Mass * 0.07f, Layer, Tag);
 
-        AddModelInfo("LeftShoulder", ref PMObjectSettings, ref AngleLimits, -130, 160, Sk, out LeftShoulderBone, Spine3Bone, 0.5f, -180, LeftShoulderPrefab, Mass * 0.03f, Layer);
-        AddModelInfo("LeftArm", ref PMObjectSettings, ref AngleLimits, 0, 170, Sk, out LeftArmBone, LeftShoulderBone, 0.5f, 0, LeftArmPrefab, Mass * 0.03f, Layer);
-        AddModelInfo("LeftHand", ref PMObjectSettings, ref AngleLimits, -20, 20, Sk, out LeftHandBone, LeftArmBone, 0.15f, 0, LeftHandPrefab, Mass * 0.01f, Layer);
+        AddModelInfo("LeftShoulder", ref PMObjectSettings, ref AngleLimits, -130, 160, Sk, out LeftShoulderBone, Spine3Bone, 0.5f, -180, LeftShoulderPrefab, Mass * 0.03f, Layer, Tag);
+        AddModelInfo("LeftArm", ref PMObjectSettings, ref AngleLimits, 0, 170, Sk, out LeftArmBone, LeftShoulderBone, 0.5f, 0, LeftArmPrefab, Mass * 0.03f, Layer, Tag);
+        AddModelInfo("LeftHand", ref PMObjectSettings, ref AngleLimits, -20, 20, Sk, out LeftHandBone, LeftArmBone, 0.15f, 0, LeftHandPrefab, Mass * 0.01f, Layer, Tag);
 
-        AddModelInfo("RightShoulder", ref PMObjectSettings, ref AngleLimits, -130, 160, Sk, out RightShoulderBone, Spine3Bone, 0.5f, -180, RightShoulderPrefab, Mass * 0.03f, Layer);
-        AddModelInfo("RightArm", ref PMObjectSettings, ref AngleLimits, 0, 170, Sk, out RightArmBone, RightShoulderBone, 0.5f, 0, RightArmPrefab, Mass * 0.03f, Layer);
-        AddModelInfo("RightHand", ref PMObjectSettings, ref AngleLimits, -20, 20, Sk, out RightHandBone, RightArmBone, 0.15f, 0, RightHandPrefab, Mass * 0.01f, Layer);
+        AddModelInfo("RightShoulder", ref PMObjectSettings, ref AngleLimits, -130, 160, Sk, out RightShoulderBone, Spine3Bone, 0.5f, -180, RightShoulderPrefab, Mass * 0.03f, Layer, Tag);
+        AddModelInfo("RightArm", ref PMObjectSettings, ref AngleLimits, 0, 170, Sk, out RightArmBone, RightShoulderBone, 0.5f, 0, RightArmPrefab, Mass * 0.03f, Layer, Tag);
+        AddModelInfo("RightHand", ref PMObjectSettings, ref AngleLimits, -20, 20, Sk, out RightHandBone, RightArmBone, 0.15f, 0, RightHandPrefab, Mass * 0.01f, Layer, Tag);
 
-        AddModelInfo("LeftHip", ref PMObjectSettings, ref AngleLimits, -80, 150, Sk, out LeftHipBone, PelvisBone, 0.5f, -180, LeftHipPrefab, Mass * 0.12f, Layer);
-        AddModelInfo("LeftElbow", ref PMObjectSettings, ref AngleLimits, -170, 0, Sk, out LeftElbowBone, LeftHipBone, 0.5f, 0, LeftElbowPrefab, Mass * 0.05f, Layer);
-        AddModelInfo("LeftFoot", ref PMObjectSettings, ref AngleLimits, -70, 40, Sk, out LeftFootBone, LeftElbowBone, 0.2f, 90, LeftFootPrefab, Mass * 0.02f, Layer);
+        AddModelInfo("LeftHip", ref PMObjectSettings, ref AngleLimits, -80, 150, Sk, out LeftHipBone, PelvisBone, 0.5f, -180, LeftHipPrefab, Mass * 0.12f, Layer, Tag);
+        AddModelInfo("LeftElbow", ref PMObjectSettings, ref AngleLimits, -170, 0, Sk, out LeftElbowBone, LeftHipBone, 0.5f, 0, LeftElbowPrefab, Mass * 0.05f, Layer, Tag);
+        AddModelInfo("LeftFoot", ref PMObjectSettings, ref AngleLimits, -70, 40, Sk, out LeftFootBone, LeftElbowBone, 0.2f, 90, LeftFootPrefab, Mass * 0.02f, Layer, Tag);
 
-        AddModelInfo("RightHip", ref PMObjectSettings, ref AngleLimits, -80, 150, Sk, out RightHipBone, PelvisBone, 0.5f, -180, RightHipPrefab, Mass * 0.12f, Layer);
-        AddModelInfo("RightElbow", ref PMObjectSettings, ref AngleLimits, -170, 0, Sk, out RightElbowBone, RightHipBone, 0.5f, 0, RightElbowPrefab, Mass * 0.05f, Layer);
-        AddModelInfo("RightFoot", ref PMObjectSettings, ref AngleLimits, -70, 40, Sk, out RightFootBone, RightElbowBone, 0.2f, 90, RightFootPrefab, Mass * 0.02f, Layer);
+        AddModelInfo("RightHip", ref PMObjectSettings, ref AngleLimits, -80, 150, Sk, out RightHipBone, PelvisBone, 0.5f, -180, RightHipPrefab, Mass * 0.12f, Layer, Tag);
+        AddModelInfo("RightElbow", ref PMObjectSettings, ref AngleLimits, -170, 0, Sk, out RightElbowBone, RightHipBone, 0.5f, 0, RightElbowPrefab, Mass * 0.05f, Layer, Tag);
+        AddModelInfo("RightFoot", ref PMObjectSettings, ref AngleLimits, -70, 40, Sk, out RightFootBone, RightElbowBone, 0.2f, 90, RightFootPrefab, Mass * 0.02f, Layer, Tag);
     }
 
     void CreateIKTargetUI(IK.IKTarget Target) {
@@ -155,7 +155,7 @@ public class CharacterCreator : MonoBehaviour {
         Dictionary<string, IK.AngleLimits> AngleLimits;
         Dictionary<string, PhysicsModel.PMObjectSettings> PMObjectSettings;
 
-        GetModelInfo(0.01f, LayerMask.NameToLayer("Character"), out AngleLimits, out mSkeleton, out PMObjectSettings);
+        GetModelInfo(0.01f, LayerMask.NameToLayer("Character"), "Dynamic", out AngleLimits, out mSkeleton, out PMObjectSettings);
 
         PhysicsModel.PhysicsModelFromSkeletonCreator PhysicsModelFromSkeletonCreator = 
             new PhysicsModel.PhysicsModelFromSkeletonCreator(mSkeleton.root, PMObjectSettings);
