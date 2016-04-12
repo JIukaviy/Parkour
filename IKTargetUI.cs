@@ -3,7 +3,10 @@ using System.Collections;
 using UnityEngine.EventSystems;
 using System;
 
-public class IKTargetUI : MonoBehaviour, IDragHandler {
+public class IKTargetUI : MonoBehaviour, IDragHandler, IPointerDownHandler, IPointerUpHandler {
+    public EventHandler OnDown;
+    public EventHandler OnUp;
+
     IK.IKTarget mTarget;
     RectTransform mTransform;
     Skeleton mSkeleton;
@@ -50,5 +53,17 @@ public class IKTargetUI : MonoBehaviour, IDragHandler {
 
     public void Update() {
         mTransform.position = Camera.main.WorldToScreenPoint(mTarget.position);
+    }
+
+    public void OnPointerDown(PointerEventData eventData) {
+        if (OnDown != null) {
+            OnDown.Invoke(this, new EventArgs());
+        }
+    }
+
+    public void OnPointerUp(PointerEventData eventData) {
+        if (OnUp != null) {
+            OnUp.Invoke(this, new EventArgs());
+        }
     }
 }
