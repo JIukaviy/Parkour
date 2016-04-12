@@ -44,6 +44,9 @@ public static class GhostCreator {
             mOriginalRigidBody.isKinematic = true;
 
             mOnRestoreGhost = OnRestoreGhost;
+
+            mGhostRigidBody.angularVelocity = mStartAngularVelocity;
+            mGhostRigidBody.velocity = mStartLinearVelocity;
         }
 
         public void DestroyGhost() {
