@@ -14,9 +14,11 @@ public class TargetFollower : MonoBehaviour {
     }
 	
 	void Update () {
-        Vector3 followerPos = mFollower.position;
-        Vector3 targetPos = Target.position;
+        if (Target != null) {
+            Vector3 followerPos = mFollower.position;
+            Vector3 targetPos = Target.position;
 
-        mFollower.position = new Vector3(0, 0, zDistance) + followerPos + (targetPos - followerPos) * Speed;
+            mFollower.position = new Vector3(0, 0, zDistance) + followerPos + (targetPos - followerPos) * Speed;
+        }
 	}
 }
