@@ -22,18 +22,18 @@ public class SkeletonGhoster : GhostCreator.Ghoster {
         }
         Manipulator gameObjectManipulator = gameObject.GetComponent<Manipulator>();
         Manipulator instanceManipulator = instance.GetComponent<Manipulator>();
-        
-        if (gameObjectManipulator != null && instanceManipulator != null) {
-            instanceManipulator.SetReferenceAngle(gameObjectManipulator.referenceAngle, gameObjectManipulator.angle);
-            instanceManipulator.targetAngle = gameObjectManipulator.targetAngle;
-        }
 
-        GhostCreator.RegisterGhost(instance, gameObject, delegate () {
-            if (gameObjectManipulator != null && instanceManipulator != null) {
+        Action restoreGhost = null;
+
+        if (gameObjectManipulator != null && instanceManipulator != null) {
+            restoreGhost = delegate () {
                 instanceManipulator.SetReferenceAngle(gameObjectManipulator.referenceAngle, gameObjectManipulator.angle);
                 instanceManipulator.targetAngle = gameObjectManipulator.targetAngle;
-            }
-        });
+            };
+            restoreGhost();
+        }
+
+        GhostCreator.RegisterGhost(instance, gameObject, restoreGhost);
 
         foreach (Skeleton.Bone bone in Bone.childs) {
             CreateGhost(bone, instance.GetComponent<Rigidbody2D>());
