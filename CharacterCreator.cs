@@ -22,7 +22,6 @@ public class CharacterCreator : MonoBehaviour {
 
     public GameObject IKTargetPrefab;
     public Transform CanvasTransform;
-    public GameObject MainCamera;
 
     Skeleton mSkeleton;
     IK mLeftArmIK;
@@ -42,6 +41,7 @@ public class CharacterCreator : MonoBehaviour {
     List<IKTargetUI> mIKTargetUIList;
 
     public Skeleton skeleton { get { return mSkeleton; } }
+    public PhysicsModel physicsModel { get { return mPhysicsModel; } }
     public IK.IKTarget leftArmIKTarget { get { return mLeftHandIKTarget; } }
     public IK.IKTarget rightArmIKTaret { get { return mRightHandIKTarget; } }
     public IK.IKTarget spineIKTarget { get { return mSpine3IKTarget; } }
@@ -135,22 +135,22 @@ public class CharacterCreator : MonoBehaviour {
         gameObject.transform.SetParent(CanvasTransform, false);
     }
 
-    void ShowUI() {
+    public void ShowUI() {
         foreach(IKTargetUI ui in mIKTargetUIList) {
             ui.Show();
         }
         ChainLineRenderer.ShowAll();
     }
 
-    void HideUI() {
+    public void HideUI() {
         foreach (IKTargetUI ui in mIKTargetUIList) {
             ui.Hide();
         }
         ChainLineRenderer.HideAll();
     }
 
-    void Start () {
-        Physics2D.gravity = new Vector2(0, -5);
+    void Awake() {
+        Physics2D.gravity = new Vector2(0, -3);
 
         Dictionary<string, IK.AngleLimits> AngleLimits;
         Dictionary<string, PhysicsModel.PMObjectSettings> PMObjectSettings;
@@ -190,31 +190,17 @@ public class CharacterCreator : MonoBehaviour {
 
         mPelvisIKTarget.UpdatePosition();
 
-        TargetFollower targetFollower = MainCamera.AddComponent<TargetFollower>();
-        targetFollower.Target = mPhysicsModel.GetObjectByName("Pelvis").GetComponent<Transform>();
-        targetFollower.zDistance = -10;
-        targetFollower.Speed = 0.1f;
-
         Time.timeScale = 0.0f;
     }
 
-    bool mPaused = true;
+    public void SetPMTargetAnglesFromSkeleton() {
+        mPhysicsModel.SetTargetAngles(mSkeletonToPMMap.ConvertSkToPmAngles(mSkeleton.GetLocalAngles()));
+    }
 
-    public void Clicked() {
-        mPaused = !mPaused;
-
-        if (mPaused) {
-            Time.timeScale = 0.0f;
-            mSkeleton.root.startPoint = mPMRootTranform.position;
-            mSkeleton.root.worldAngle = new Quaternion2D(mPMRootTranform.rotation.eulerAngles.z);
-            mSkeleton.SetLocalAngles(mSkeletonToPMMap.ConvertPmToSkAngles(mPhysicsModel.GetAngles()));
-            mPelvisIKTarget.UpdatePosition();
-            ShowUI();
-        } else {
-            mPhysicsModel.SetTargetAngles(mSkeletonToPMMap.ConvertSkToPmAngles(mSkeleton.GetLocalAngles()));
-            ChainLineRenderer.HideAll();
-            HideUI();
-            Time.timeScale = 1.0f;
-        }
+    public void SetSkeletonAnglesFromPM() {
+        mSkeleton.root.startPoint = mPMRootTranform.position;
+        mSkeleton.root.worldAngle = new Quaternion2D(mPMRootTranform.rotation.eulerAngles.z);
+        mSkeleton.SetLocalAngles(mSkeletonToPMMap.ConvertPmToSkAngles(mPhysicsModel.GetAngles()));
+        mPelvisIKTarget.UpdatePosition();
     }
 }
