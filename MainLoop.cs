@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
+using System;
 
 public class MainLoop : MonoBehaviour {
     public GameObject MainCamera;
@@ -8,22 +9,40 @@ public class MainLoop : MonoBehaviour {
 
     Transform mPMRootTranform;
     List<IKTargetUI> mIKTargetUIList;
+    SkeletonGhoster mSkeletonGhoster;
 
     bool mPaused = true;
 
-    public void Clicked() {
-        mPaused = !mPaused;
+    void Pause() {
+        Character.SetSkeletonAnglesFromPM();
+        Character.ShowUI();
+        GhostCreator.CreateGhosts();
+        mPaused = true;
+    }
 
+    void UnPause() {
+        Character.SetPMTargetAnglesFromSkeleton();
+        ChainLineRenderer.HideAll();
+        Character.HideUI();
+        GhostCreator.DeleteGhosts();
+        mPaused = false;
+    }
+
+    public void Clicked() {
         if (mPaused) {
-            Time.timeScale = 0.0f;
-            Character.SetSkeletonAnglesFromPM();
-            Character.ShowUI();
+            UnPause();
         } else {
-            Character.SetPMTargetAnglesFromSkeleton();
-            ChainLineRenderer.HideAll();
-            Character.HideUI();
-            Time.timeScale = 1.0f;
+            Pause();
         }
+    }
+
+    void OnIKTargetUIDown(object sender, EventArgs args) {
+        //GhostCreator.DeleteGhosts();
+    }
+
+    void OnIKTargetUIUp(object sender, EventArgs args) {
+        Character.SetPMTargetAnglesFromSkeleton();
+        GhostCreator.RestoreGhostState();
     }
 
     void Start() {
@@ -32,8 +51,22 @@ public class MainLoop : MonoBehaviour {
         TargetFollower targetFollower = MainCamera.AddComponent<TargetFollower>();
         targetFollower.Target = Character.physicsModel.GetObjectByName("Pelvis").GetComponent<Transform>();
         targetFollower.zDistance = -10;
-        targetFollower.Speed = 0.1f;
+        targetFollower.Speed = 0.01f;
 
-        Time.timeScale = 0.0f;
+        mSkeletonGhoster = new SkeletonGhoster(Character.physicsModel, Character.skeleton);
+
+        Character.spineIKTargetUI.OnDown = OnIKTargetUIDown;
+        Character.leftHandIKTargetUI.OnDown = OnIKTargetUIDown;
+        Character.rightHandIKTargetUI.OnDown = OnIKTargetUIDown;
+        Character.leftLegIKTargetUI.OnDown = OnIKTargetUIDown;
+        Character.rightLegIKTargetUI.OnDown = OnIKTargetUIDown;
+
+        Character.spineIKTargetUI.OnUp = OnIKTargetUIUp;
+        Character.leftHandIKTargetUI.OnUp = OnIKTargetUIUp;
+        Character.rightHandIKTargetUI.OnUp = OnIKTargetUIUp;
+        Character.leftLegIKTargetUI.OnUp = OnIKTargetUIUp;
+        Character.rightLegIKTargetUI.OnUp = OnIKTargetUIUp;
+
+        Pause();
     }
 }

@@ -20,7 +20,6 @@ public class Manipulator : MonoBehaviour {
         jointAngle = -jointAngle;
         Rigidbody2D parentRigidBody = mJoint.connectedBody;
         float rotation = mRigidBody.rotation;
-        Debug.Log(rotation);
         mRigidBody.rotation = parentRigidBody.rotation - refAngle;
         mJoint.connectedBody = parentRigidBody;
         mRigidBody.rotation = rotation;

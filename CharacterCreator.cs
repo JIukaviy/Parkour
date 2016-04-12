@@ -24,30 +24,44 @@ public class CharacterCreator : MonoBehaviour {
     public Transform CanvasTransform;
 
     Skeleton mSkeleton;
+    PhysicsModel mPhysicsModel;
+    PhysicsModel.SkeletonToPhysicsModelAnglesMap mSkeletonToPMMap;
+
     IK mLeftArmIK;
     IK mRightArmIK;
     IK mSpineIK;
     IK mLeftLegIK;
     IK mRightLegIK;
+
     IK.IKTarget mSpine3IKTarget;
     IK.IKTarget mLeftHandIKTarget;
     IK.IKTarget mRightHandIKTarget;
     IK.IKTarget mPelvisIKTarget;
     IK.IKTarget mLeftLegIKTarget;
     IK.IKTarget mRightLegIKTarget;
-    PhysicsModel mPhysicsModel;
-    PhysicsModel.SkeletonToPhysicsModelAnglesMap mSkeletonToPMMap;
+
+    IKTargetUI mSpine3IKTargetUI;
+    IKTargetUI mLeftHandIKTargetUI;
+    IKTargetUI mRightHandIKTargetUI;
+    IKTargetUI mLeftLegIKTargetUI;
+    IKTargetUI mRightLegIKTargetUI;
+
     Transform mPMRootTranform;
-    List<IKTargetUI> mIKTargetUIList;
 
     public Skeleton skeleton { get { return mSkeleton; } }
     public PhysicsModel physicsModel { get { return mPhysicsModel; } }
-    public IK.IKTarget leftArmIKTarget { get { return mLeftHandIKTarget; } }
-    public IK.IKTarget rightArmIKTaret { get { return mRightHandIKTarget; } }
+    public IK.IKTarget leftHandIKTarget { get { return mLeftHandIKTarget; } }
+    public IK.IKTarget rightHandIKTarget { get { return mRightHandIKTarget; } }
     public IK.IKTarget spineIKTarget { get { return mSpine3IKTarget; } }
     public IK.IKTarget pelvisIKTarget { get { return mPelvisIKTarget; } }
     public IK.IKTarget leftLegIKTarget { get { return mLeftLegIKTarget; } }
     public IK.IKTarget rightLegIKTarget { get { return mRightLegIKTarget; } }
+
+    public IKTargetUI leftHandIKTargetUI { get { return mLeftHandIKTargetUI; } }
+    public IKTargetUI rightHandIKTargetUI { get { return mRightHandIKTargetUI; } }
+    public IKTargetUI spineIKTargetUI { get { return mSpine3IKTargetUI; } }
+    public IKTargetUI leftLegIKTargetUI { get { return mLeftLegIKTargetUI; } }
+    public IKTargetUI rightLegIKTargetUI { get { return mRightLegIKTargetUI; } }
 
     void AddModelInfo(string Name, ref Dictionary<string, PhysicsModel.PMObjectSettings> PMObjectSettings, 
         ref Dictionary<string, IK.AngleLimits> AngleLimits, float lowerAngle, float upperAngle, Skeleton Sk,
@@ -123,29 +137,30 @@ public class CharacterCreator : MonoBehaviour {
         AddModelInfo("RightFoot", ref PMObjectSettings, ref AngleLimits, -70, 40, Sk, out RightFootBone, RightElbowBone, 0.2f, 90, RightFootPrefab, Mass * 0.02f, Layer, Tag);
     }
 
-    void CreateIKTargetUI(IK.IKTarget Target) {
-        if (mIKTargetUIList == null) {
-            mIKTargetUIList = new List<IKTargetUI>();
-        }
+    IKTargetUI CreateIKTargetUI(IK.IKTarget Target) {
         GameObject gameObject = Instantiate(IKTargetPrefab);
         IKTargetUI targetUI = gameObject.GetComponent<IKTargetUI>();
         targetUI.IKTarget = Target;
         targetUI.skeleton = mSkeleton;
-        mIKTargetUIList.Add(targetUI);
         gameObject.transform.SetParent(CanvasTransform, false);
+        return targetUI;
     }
 
     public void ShowUI() {
-        foreach(IKTargetUI ui in mIKTargetUIList) {
-            ui.Show();
-        }
+        mSpine3IKTargetUI.Show();
+        mLeftHandIKTargetUI.Show();
+        mRightHandIKTargetUI.Show();
+        mLeftLegIKTargetUI.Show();
+        mRightLegIKTargetUI.Show();
         ChainLineRenderer.ShowAll();
     }
 
     public void HideUI() {
-        foreach (IKTargetUI ui in mIKTargetUIList) {
-            ui.Hide();
-        }
+        mSpine3IKTargetUI.Hide();
+        mLeftHandIKTargetUI.Hide();
+        mRightHandIKTargetUI.Hide();
+        mLeftLegIKTargetUI.Hide();
+        mRightLegIKTargetUI.Hide();
         ChainLineRenderer.HideAll();
     }
 
@@ -182,15 +197,13 @@ public class CharacterCreator : MonoBehaviour {
 
         mPMRootTranform = mPhysicsModel.GetObjectByName("Pelvis").transform;
 
-        CreateIKTargetUI(mLeftHandIKTarget);
-        CreateIKTargetUI(mRightHandIKTarget);
-        CreateIKTargetUI(mSpine3IKTarget);
-        CreateIKTargetUI(mLeftLegIKTarget);
-        CreateIKTargetUI(mRightLegIKTarget);
+        mLeftHandIKTargetUI = CreateIKTargetUI(mLeftHandIKTarget);
+        mRightHandIKTargetUI = CreateIKTargetUI(mRightHandIKTarget);
+        mSpine3IKTargetUI = CreateIKTargetUI(mSpine3IKTarget);
+        mLeftLegIKTargetUI = CreateIKTargetUI(mLeftLegIKTarget);
+        mRightLegIKTargetUI = CreateIKTargetUI(mRightLegIKTarget);
 
         mPelvisIKTarget.UpdatePosition();
-
-        Time.timeScale = 0.0f;
     }
 
     public void SetPMTargetAnglesFromSkeleton() {
