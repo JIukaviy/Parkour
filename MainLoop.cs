@@ -7,6 +7,10 @@ public class MainLoop : MonoBehaviour {
 
     public CharacterCreator Character;
 
+    public ReplayRecorder ReplayRecorder;
+    public ReplayPlayer ReplayPlayer;
+    public OnCollideInformer FinishInformer;
+
     Transform mPMRootTranform;
     List<IKTargetUI> mIKTargetUIList;
     SkeletonGhoster mSkeletonGhoster;
@@ -17,6 +21,7 @@ public class MainLoop : MonoBehaviour {
         Character.SetSkeletonAnglesFromPM();
         Character.ShowUI();
         GhostCreator.CreateGhosts();
+        ReplayRecorder.PauseRecording();
         mPaused = true;
     }
 
@@ -25,6 +30,7 @@ public class MainLoop : MonoBehaviour {
         ChainLineRenderer.HideAll();
         Character.HideUI();
         GhostCreator.DeleteGhosts();
+        ReplayRecorder.ContinueRecording();
         mPaused = false;
     }
 
@@ -43,6 +49,18 @@ public class MainLoop : MonoBehaviour {
     void OnIKTargetUIUp(object sender, EventArgs args) {
         Character.SetPMTargetAnglesFromSkeleton();
         GhostCreator.RestoreGhostState();
+    }
+
+    void OnFinish(object sender, EventArgs args) {
+        Replay replay = ReplayRecorder.StopRecording();
+        Character.HideUI();
+        GhostCreator.DeleteGhosts();
+        ReplayPlayer.Play(replay);
+    }
+
+    void OnReplayEnd(object sender, EventArgs args) {
+        ReplayPlayer.ToStart();
+        ReplayPlayer.Continue();
     }
 
     void Start() {
@@ -66,6 +84,14 @@ public class MainLoop : MonoBehaviour {
         Character.rightHandIKTargetUI.OnUp = OnIKTargetUIUp;
         Character.leftLegIKTargetUI.OnUp = OnIKTargetUIUp;
         Character.rightLegIKTargetUI.OnUp = OnIKTargetUIUp;
+
+        GhostCreator.RegisterLayerConverter(LayerMask.NameToLayer("Character"), LayerMask.NameToLayer("GhostCharacter"));
+        GhostCreator.RegisterLayerConverter(LayerMask.NameToLayer("Dynamic"), LayerMask.NameToLayer("Ghost"));
+
+        ReplayRecorder.timeDelta = 0.1f;
+        ReplayRecorder.StartRecording("Dynamic");
+        ReplayPlayer.OnReplayEnd += OnReplayEnd;
+        FinishInformer.OnFinish += OnFinish;
 
         Pause();
     }
