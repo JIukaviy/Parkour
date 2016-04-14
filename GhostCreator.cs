@@ -77,6 +77,11 @@ public static class GhostCreator {
     
     static List<Ghoster> mGhosters = new List<Ghoster>();
     static List<GhostInfo> mGhostsInfo = new List<GhostInfo>();
+    static Dictionary<int, int> mLayerConverter = new Dictionary<int, int>();
+
+    static public void RegisterLayerConverter(int aFrom, int aTo) {
+        mLayerConverter[aFrom] = aTo;
+    }
 
     static public void RegisterGhoster(Ghoster aGhoster) {
         mGhosters.Add(aGhoster);
@@ -84,6 +89,10 @@ public static class GhostCreator {
 
     static public void RegisterGhost(GameObject Ghost, GameObject Original, Action OnRestoreObject = null) {
         mGhostsInfo.Add(new GhostInfo(Ghost, Original, OnRestoreObject));
+        int newLayer;
+        if (mLayerConverter.TryGetValue(Ghost.layer, out newLayer)) {
+            Ghost.layer = newLayer;
+        }
     }
 	
 	static public void CreateGhosts() {
