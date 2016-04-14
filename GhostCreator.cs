@@ -12,7 +12,8 @@ public static class GhostCreator {
         GameObject mOriginal;
 
         Vector2 mStartPosition;
-        float mStartRotation;
+        float mStartOriginalRotation;
+        float mStartGhostRotation;
 
         Vector2 mStartLinearVelocity;
         float mStartAngularVelocity;
@@ -36,7 +37,8 @@ public static class GhostCreator {
             mGhostRigidBody = Ghost.GetComponent<Rigidbody2D>();
 
             mStartPosition = mOriginalRigidBody.position;
-            mStartRotation = mOriginalRigidBody.rotation;
+            mStartOriginalRotation = mOriginalRigidBody.rotation;
+            mStartGhostRotation = mGhostRigidBody.rotation;
 
             mStartLinearVelocity = mOriginalRigidBody.velocity;
             mStartAngularVelocity = mOriginalRigidBody.angularVelocity;
@@ -55,7 +57,7 @@ public static class GhostCreator {
 
         public void RestoreGhostState() {
             mGhostRigidBody.position = mStartPosition;
-            mGhostRigidBody.rotation = mStartRotation;
+            mGhostRigidBody.rotation = mStartGhostRotation;
 
             mGhostRigidBody.velocity = mStartLinearVelocity;
             mGhostRigidBody.angularVelocity = mStartAngularVelocity;
