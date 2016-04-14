@@ -19,11 +19,11 @@ public class Replay {
 
     struct Frame {
         public ObjectState[] objectStates;
-        public float time;
+        public float timeDelta;
 
-        public Frame(ObjectState[] aObjectStates, float Time) {
+        public Frame(ObjectState[] aObjectStates, float aTimeDelta) {
             objectStates = aObjectStates;
-            time = Time;
+            timeDelta = aTimeDelta;
         }
     }
 
@@ -32,9 +32,15 @@ public class Replay {
     Rigidbody2D[] mRigidBodyes;
     List<Frame> mFrames;
 
-    float mCurrentRecordTime;
-    float mCurrentPlayTime;
+    float mCurrentFramePlayingTime;
     int mCurrentFrameID;
+
+    void UpdateComponents() {
+        for (int i = 0; i < mGameObjects.Length; i++) {
+            mTransforms[i] = mGameObjects[i].GetComponent<Transform>();
+            mRigidBodyes[i] = mGameObjects[i].GetComponent<Rigidbody2D>();
+        }
+    }
 
     public Replay(GameObject[] aGameObjects) {
         mGameObjects = aGameObjects;
@@ -42,10 +48,7 @@ public class Replay {
         mRigidBodyes = new Rigidbody2D[mGameObjects.Length];
         mFrames = new List<Frame>();
 
-        for (int i = 0; i < mGameObjects.Length; i++) {
-            mTransforms[i] = mGameObjects[i].GetComponent<Transform>();
-            mRigidBodyes[i] = mGameObjects[i].GetComponent<Rigidbody2D>();
-        }
+        UpdateComponents();
     }
 
     float LerpAngle(float a1, float a2, float t) {
@@ -58,7 +61,7 @@ public class Replay {
         return a1 + t * (a2 - a1);
     }
 
-    public void RecordFrame(float aTimeStep) {
+    public void RecordFrame(float aTimeDelta) {
         ObjectState[] objectStates = new ObjectState[mGameObjects.Length];
         for (int i = 0; i < mTransforms.Length; i++) {
             Rigidbody2D currentRigidBody = mRigidBodyes[i];
@@ -66,14 +69,15 @@ public class Replay {
             objectStates[i] = new ObjectState(currentTransform.position, currentTransform.rotation.eulerAngles.z,
                 currentRigidBody.velocity, currentRigidBody.angularVelocity);
         }
-        mFrames.Add(new Frame(objectStates, mCurrentRecordTime));
-        mCurrentRecordTime += aTimeStep;
+        mFrames.Add(new Frame(objectStates, aTimeDelta));
     }
     
-    public bool PlayNextFrame(float aTimeStep) {
+    public bool PlayNextFrame(float aTimeDelta) {
+        mCurrentFramePlayingTime += aTimeDelta;
         while (mCurrentFrameID < mFrames.Count - 1 && 
-            mFrames[mCurrentFrameID].time < mCurrentPlayTime && mFrames[mCurrentFrameID + 1].time < mCurrentPlayTime) 
+            mFrames[mCurrentFrameID].timeDelta < mCurrentFramePlayingTime) 
         {
+            mCurrentFramePlayingTime -= mFrames[mCurrentFrameID].timeDelta;
             mCurrentFrameID++;
         }
         if (mCurrentFrameID >= mFrames.Count - 1) {
@@ -88,12 +92,11 @@ public class Replay {
             Frame nextFrame = mFrames[mCurrentFrameID + 1];
             ObjectState[] currentObjectStates = currentFrame.objectStates;
             ObjectState[] nextObjectStates = nextFrame.objectStates;
-            float t = (mCurrentPlayTime - currentFrame.time) / (nextFrame.time - currentFrame.time); // between 0 and 1
+            float t = mCurrentFramePlayingTime / currentFrame.timeDelta; // between 0 and 1
             for (int i = 0; i < mTransforms.Length; i++) {
                 mTransforms[i].position = Vector2.Lerp(currentObjectStates[i].position, nextObjectStates[i].position, t);
                 mTransforms[i].rotation = Quaternion.Euler(0, 0, LerpAngle(currentObjectStates[i].rotation, nextObjectStates[i].rotation, t));
             }
-            mCurrentPlayTime += aTimeStep;
             return true;
         }
     }
@@ -106,6 +109,6 @@ public class Replay {
 
     public void ToStart() {
         mCurrentFrameID = 0;
-        mCurrentPlayTime = 0;
+        mCurrentFramePlayingTime = 0;
     }
 }
