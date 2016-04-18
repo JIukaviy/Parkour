@@ -24,23 +24,18 @@ public class MainLoop : MonoBehaviour {
     bool mPaused = true;
 
     void Pause() {
-        Character.SetSkeletonAnglesFromPM();
+        MainReplayRecorder.PauseRecording();
         Character.ShowUI();
-        if (MainReplayPlayer.playing) {
-            MainReplayPlayer.Pause();
-            MainReplayPlayer.EraseAfterwardsFrames();
-        }
+        Character.SetSkeletonAnglesFromPM();
         GhostCreator.CreateGhosts(GhostLivingTime);
-        GhostReplayRecorder.StartRecording(GhostCreator.GetGhostsGameObjects());
         mPaused = true;
     }
 
     void UnPause() {
         ChainLineRenderer.HideAll();
         Character.HideUI();
-        MoveGhostsReplayToMain();
         GhostCreator.DeleteGhosts();
-        MainReplayPlayer.Continue();
+        MainReplayRecorder.ContinueRecording();
         mPaused = false;
     }
 
@@ -70,20 +65,14 @@ public class MainLoop : MonoBehaviour {
 
     void OnIKTargetUIUp(object sender, EventArgs args) {
         Character.SetPMTargetAnglesFromSkeleton();
-        if (GhostReplayPlayer.playing) {
-            GhostReplayPlayer.Stop();
-        }
         GhostCreator.RestoreGhostState(GhostLivingTime);
-        GhostReplayRecorder.EraseRecorded();
-        GhostReplayRecorder.ContinueRecording();
     }
 
     void OnFinish(object sender, EventArgs args) {
         Replay replay = MainReplayRecorder.StopRecording();
         Character.HideUI();
         GhostCreator.DeleteGhosts();
-        MainReplayPlayer.OnReplayEnd -= OnMainReplayEnd;
-        MainReplayPlayer.OnReplayEnd += OnFinishMainReplayEnd;
+        Destroy(GameObject.Find("PlayButton"));
         MainReplayPlayer.Play(replay);
     }
 
@@ -100,9 +89,8 @@ public class MainLoop : MonoBehaviour {
     }
 
     void OnMainReplayEnd(object sender, EventArgs args) {
-        MainReplayPlayer.PrepareToSumulation();
-        MainReplayRecorder.ContinueRecording();
-        Debug.Log("MAIN REPLAY IS ENDED, STARTING SIMULATION");
+        MainReplayPlayer.ToStart();
+        MainReplayPlayer.Continue();
     }
 
     void OnFinishMainReplayEnd(object sender, EventArgs args) {
@@ -111,9 +99,7 @@ public class MainLoop : MonoBehaviour {
     }
 
     void OnGhostLivingTimeExceeded(object sender, EventArgs args) {
-        Replay ghostReplay = GhostReplayRecorder.StopRecording();
-        ghostReplay.ToStart();
-        GhostReplayPlayer.Play(ghostReplay);
+        GhostCreator.RestoreGhostState(GhostLivingTime);
     }
 
     void Start() {
@@ -145,13 +131,8 @@ public class MainLoop : MonoBehaviour {
         GhostCreator.OnGhostLivingTimeExceeded += OnGhostLivingTimeExceeded;
 
         MainReplayRecorder.timeDelta = 0.1f;
-        GhostReplayRecorder.timeDelta = 0.1f;
         MainReplayRecorder.StartRecording("Dynamic");
-        MainReplayRecorder.PauseRecording();
-        MainReplayPlayer.Play(MainReplayRecorder.replay);
-        MainReplayPlayer.PrepareToSumulation();
         MainReplayPlayer.OnReplayEnd += OnMainReplayEnd;
-        GhostReplayPlayer.OnReplayEnd += OnGhostReplayEnd;
         FinishInformer.OnFinish += OnFinish;
 
         Pause();

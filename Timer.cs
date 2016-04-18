@@ -32,7 +32,6 @@ public class Timer : MonoBehaviour {
             mTimeCounter = 0;
             if (OnElapsed != null) {
                 OnElapsed.Invoke(this, new EventArgs());
-                Debug.Log("GHOSTS IS DEAD!");
             }
         }
 	}
