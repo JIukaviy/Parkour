@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
+using System;
 
 public class CharacterCreator : MonoBehaviour {
     public GameObject PelvisPrefab;
@@ -46,6 +47,8 @@ public class CharacterCreator : MonoBehaviour {
     IKTargetUI mLeftLegIKTargetUI;
     IKTargetUI mRightLegIKTargetUI;
 
+    List<IKTargetUI> mIKTargetUIList;
+
     Transform mPMRootTranform;
 
     public Skeleton skeleton { get { return mSkeleton; } }
@@ -62,6 +65,9 @@ public class CharacterCreator : MonoBehaviour {
     public IKTargetUI spineIKTargetUI { get { return mSpine3IKTargetUI; } }
     public IKTargetUI leftLegIKTargetUI { get { return mLeftLegIKTargetUI; } }
     public IKTargetUI rightLegIKTargetUI { get { return mRightLegIKTargetUI; } }
+
+    public EventHandler OnIKTargetUIPosChanged;
+
 
     void AddModelInfo(string Name, ref Dictionary<string, PhysicsModel.PMObjectSettings> PMObjectSettings, 
         ref Dictionary<string, IK.AngleLimits> AngleLimits, float lowerAngle, float upperAngle, Skeleton Sk,
@@ -142,26 +148,30 @@ public class CharacterCreator : MonoBehaviour {
         IKTargetUI targetUI = gameObject.GetComponent<IKTargetUI>();
         targetUI.IKTarget = Target;
         targetUI.skeleton = mSkeleton;
+        targetUI.OnPosChanged += OnTargetPosChanged;
         gameObject.transform.SetParent(CanvasTransform, false);
+        mIKTargetUIList.Add(targetUI);
         return targetUI;
     }
 
     public void ShowUI() {
-        mSpine3IKTargetUI.Show();
-        mLeftHandIKTargetUI.Show();
-        mRightHandIKTargetUI.Show();
-        mLeftLegIKTargetUI.Show();
-        mRightLegIKTargetUI.Show();
+        foreach(IKTargetUI targetUI in mIKTargetUIList) {
+            targetUI.Show();
+        }
         ChainLineRenderer.ShowAll();
     }
 
     public void HideUI() {
-        mSpine3IKTargetUI.Hide();
-        mLeftHandIKTargetUI.Hide();
-        mRightHandIKTargetUI.Hide();
-        mLeftLegIKTargetUI.Hide();
-        mRightLegIKTargetUI.Hide();
+        foreach(IKTargetUI targetUI in mIKTargetUIList) {
+            targetUI.Hide();
+        }
         ChainLineRenderer.HideAll();
+    }
+
+    public void OnTargetPosChanged(object sender, EventArgs e) {
+        if (OnIKTargetUIPosChanged != null) {
+            OnIKTargetUIPosChanged.Invoke(sender, e);
+        }
     }
 
     void Awake() {
@@ -196,6 +206,8 @@ public class CharacterCreator : MonoBehaviour {
         mSkeletonToPMMap = new PhysicsModel.SkeletonToPhysicsModelAnglesMap(mSkeleton.GetLocalAnglesOrder(), mPhysicsModel.GetAnglesOrder());
 
         mPMRootTranform = mPhysicsModel.GetObjectByName("Pelvis").transform;
+
+        mIKTargetUIList = new List<IKTargetUI>();
 
         mLeftHandIKTargetUI = CreateIKTargetUI(mLeftHandIKTarget);
         mRightHandIKTargetUI = CreateIKTargetUI(mRightHandIKTarget);

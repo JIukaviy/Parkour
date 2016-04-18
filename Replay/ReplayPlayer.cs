@@ -5,42 +5,63 @@ using System;
 public class ReplayPlayer : MonoBehaviour {
     public EventHandler OnReplayEnd;
 
-    Replay mCurrentReplay;
-    bool mPlayingReplay;
+    Replay mReplay;
+
+    public bool playing { get { return enabled; } }
+    public Replay replay { get { return mReplay; } }
+
+    void Awake() {
+        enabled = false;
+    }
 
     public void Play(Replay aReplay) {
-        mCurrentReplay = aReplay;
-        mCurrentReplay.SetObjectsIsKinematic(true);
-        mPlayingReplay = true;
+        mReplay = aReplay;
+        mReplay.SetObjectsIsKinematic(true);
+        enabled = true;
     }
 
     public void Pause() {
-        mPlayingReplay = false;
+        enabled = false;
     }
 
     public void Continue() {
-        if (mCurrentReplay != null) {
-            mPlayingReplay = true;
+        if (mReplay != null) {
+            enabled = true;
         }
     }
 
     public void Stop() {
-        mPlayingReplay = false;
-        if (mCurrentReplay != null) {
-            mCurrentReplay.SetObjectsIsKinematic(false);
-            mCurrentReplay = null;
+        enabled = false;
+        if (mReplay != null) {
+            mReplay.SetObjectsIsKinematic(false);
+            mReplay = null;
         }
     }
 
     public void ToStart() {
-        if (mCurrentReplay != null) {
-            mCurrentReplay.ToStart();
-            mPlayingReplay = false;
+        if (mReplay != null) {
+            mReplay.ToStart();
+            enabled = false;
+        }
+    }
+
+    public void EraseAfterwardsFrames() {
+        if (mReplay != null) {
+            mReplay.EraseAfterwardsFrames();
+            enabled = false;
+        }
+    }
+
+    public void PrepareToSumulation() {
+        if (mReplay != null) {
+            mReplay.PrepareToSimulation();
+            Pause();
         }
     }
 
     void Update() {
-        if (mPlayingReplay && !mCurrentReplay.PlayNextFrame(Time.deltaTime) && OnReplayEnd != null) {
+        if (enabled && !mReplay.PlayNextFrame(Time.deltaTime) && OnReplayEnd != null) {
+            enabled = false;
             OnReplayEnd.Invoke(this, new EventArgs());
         }
     }

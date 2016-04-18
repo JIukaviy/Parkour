@@ -3,6 +3,14 @@ using System.Collections.Generic;
 using System;
 
 public class Replay {
+    public class WrongCountOfGameObjects : Exception {
+        public int Needed;
+        public int Given;
+
+        public WrongCountOfGameObjects(int aNeeded, int aGiven) :
+            base(string.Format("{0} game objects is expected, but {1} is given", aNeeded, aGiven)) { }
+    }
+
     struct ObjectState {
         public Vector2 position;
         public float rotation;
@@ -34,6 +42,9 @@ public class Replay {
 
     float mCurrentFramePlayingTime;
     int mCurrentFrameID;
+
+    public int currentPlayFrameID { get { return mCurrentFrameID; } }
+    public int frameCount { get { return mFrames.Count; } }
 
     void UpdateComponents() {
         for (int i = 0; i < mGameObjects.Length; i++) {
@@ -71,16 +82,25 @@ public class Replay {
         }
         mFrames.Add(new Frame(objectStates, aTimeDelta));
     }
-    
+
+    void GetCurrentFrame(out ObjectState[] aCurrentObjectStates, out ObjectState[] aNextObjectStates, out float t) {
+        Frame currentFrame = mFrames[mCurrentFrameID];
+        Frame nextFrame = mFrames[mCurrentFrameID + 1];
+        aCurrentObjectStates = currentFrame.objectStates;
+        aNextObjectStates = nextFrame.objectStates;
+        t = mCurrentFramePlayingTime / currentFrame.timeDelta; // between 0 and 1
+    }
+
     public bool PlayNextFrame(float aTimeDelta) {
         mCurrentFramePlayingTime += aTimeDelta;
-        while (mCurrentFrameID < mFrames.Count - 1 && 
-            mFrames[mCurrentFrameID].timeDelta < mCurrentFramePlayingTime) 
-        {
+        while (mCurrentFrameID < mFrames.Count - 1 &&
+            mFrames[mCurrentFrameID].timeDelta < mCurrentFramePlayingTime) {
             mCurrentFramePlayingTime -= mFrames[mCurrentFrameID].timeDelta;
             mCurrentFrameID++;
         }
-        if (mCurrentFrameID >= mFrames.Count - 1) {
+        if (mFrames.Count == 0) {
+            return false;
+        } else if (mCurrentFrameID >= mFrames.Count - 1) {
             ObjectState[] objectStates = mFrames[mFrames.Count - 1].objectStates;
             for (int i = 0; i < objectStates.Length; i++) {
                 mTransforms[i].position = objectStates[i].position;
@@ -88,11 +108,9 @@ public class Replay {
             }
             return false;
         } else {
-            Frame currentFrame = mFrames[mCurrentFrameID];
-            Frame nextFrame = mFrames[mCurrentFrameID + 1];
-            ObjectState[] currentObjectStates = currentFrame.objectStates;
-            ObjectState[] nextObjectStates = nextFrame.objectStates;
-            float t = mCurrentFramePlayingTime / currentFrame.timeDelta; // between 0 and 1
+            ObjectState[] currentObjectStates, nextObjectStates;
+            float t;
+            GetCurrentFrame(out currentObjectStates, out nextObjectStates, out t);
             for (int i = 0; i < mTransforms.Length; i++) {
                 mTransforms[i].position = Vector2.Lerp(currentObjectStates[i].position, nextObjectStates[i].position, t);
                 mTransforms[i].rotation = Quaternion.Euler(0, 0, LerpAngle(currentObjectStates[i].rotation, nextObjectStates[i].rotation, t));
@@ -101,10 +119,61 @@ public class Replay {
         }
     }
 
+    public void PrepareToSimulation() {
+        if (mFrames.Count == 0) {
+            SetObjectsIsKinematic(false);
+        } else if (mCurrentFrameID >= mFrames.Count - 1) {
+            ObjectState[] currentObjectStates = mFrames[mFrames.Count - 1].objectStates;
+            for (int i = 0; i < mRigidBodyes.Length; i++) {
+                mRigidBodyes[i].isKinematic = false;
+
+                mRigidBodyes[i].velocity = currentObjectStates[i].linearVelocity;
+                mRigidBodyes[i].angularVelocity = currentObjectStates[i].angularVelocity;
+            }
+        } else {
+            ObjectState[] currentObjectStates, nextObjectStates;
+            float t;
+            GetCurrentFrame(out currentObjectStates, out nextObjectStates, out t);
+            for (int i = 0; i < mRigidBodyes.Length; i++) {
+                mRigidBodyes[i].isKinematic = false;
+
+                mRigidBodyes[i].velocity = Vector2.Lerp(currentObjectStates[i].linearVelocity, nextObjectStates[i].linearVelocity, t);
+                mRigidBodyes[i].angularVelocity = LerpAngle(currentObjectStates[i].angularVelocity, nextObjectStates[i].angularVelocity, t);
+            }
+        }
+    }
+    
+    public void ReplaceGameObjects(Dictionary<GameObject, GameObject> aRule) {
+        for(int i = 0; i < mGameObjects.Length; i++) {
+            GameObject newGameObject;
+            if (aRule.TryGetValue(mGameObjects[i], out newGameObject)) {
+                mGameObjects[i] = newGameObject;
+            }
+        }
+        UpdateComponents();
+    }
+
     public void SetObjectsIsKinematic(bool aIsKinematic) {
         for (int i = 0; i < mRigidBodyes.Length; i++) {
             mRigidBodyes[i].isKinematic = aIsKinematic;
         }
+    }
+
+    public void EraseRecorded() {
+        mFrames.Clear();
+    }
+
+    public void EraseAfterwardsFrames() {
+        if (mCurrentFrameID < mFrames.Count - 1) {
+            mFrames.RemoveRange(mCurrentFrameID + 1, mFrames.Count - mCurrentFrameID - 1);
+        }
+    }
+
+    public void ConcatenateReplay(Replay aReplay) {
+        if (mGameObjects.Length != aReplay.mGameObjects.Length) {
+            throw new WrongCountOfGameObjects(mGameObjects.Length, aReplay.mGameObjects.Length);
+        }
+        mFrames.AddRange(aReplay.mFrames);
     }
 
     public void ToStart() {

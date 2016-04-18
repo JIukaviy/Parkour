@@ -34,7 +34,7 @@ public class ChainLineRenderer : MonoBehaviour {
         ChainLineRenderer chainRenderer = gameObject.GetComponent<ChainLineRenderer>();
         chainRenderer.mBone = Bone;
         chainRenderer.mWidth = Width;
-               
+        
         foreach(Skeleton.Bone bone in Bone.childs) {
             ApplyLineRenderer(bone, Width);
         }
