@@ -61,15 +61,15 @@ public static class GhostCreator {
         public void RestoreGhostState() {
             mGhostRigidBody.isKinematic = false;
 
+            if (mOnRestoreGhost != null) {
+                mOnRestoreGhost();
+            }
+
             mGhostRigidBody.position = mStartPosition;
             mGhostRigidBody.rotation = mStartGhostRotation;
 
             mGhostRigidBody.velocity = mStartLinearVelocity;
             mGhostRigidBody.angularVelocity = mStartAngularVelocity;
-
-            if (mOnRestoreGhost != null) {
-                mOnRestoreGhost();
-            }
         }
 
         public void RestoreOriginalObjectState() {
