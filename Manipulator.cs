@@ -40,6 +40,11 @@ public class Manipulator : MonoBehaviour {
         mTransform = GetComponent<Transform>();
     }
 
+    public void OnCopy(Manipulator aOriginal) {
+        SetReferenceAngle(aOriginal.referenceAngle, aOriginal.angle);
+        targetAngle = aOriginal.targetAngle;
+    }
+
     void FixedUpdate() {
         float Err = -targetAngle - mJoint.jointAngle;
         JointMotor2D motor = new JointMotor2D();
