@@ -29,15 +29,17 @@ public static class GhostCreator {
         public GameObject originalGameObject { get { return mOriginal; } }
         public GameObject ghostGameObject { get { return mGhost; } }
 
-        public GhostInfo(GameObject Ghost, GameObject Original, Action OnRestoreGhost = null) {
-            mGhost = Ghost;
-            mOriginal = Original;
+        public Action mOnCreationEnd;
 
-            mOriginalTransform = Original.GetComponent<Transform>();
-            mOriginalRigidBody = Original.GetComponent<Rigidbody2D>();
+        public GhostInfo(GameObject aGhost, GameObject aOriginal, Action aOnRestoreGhost = null, Action aOnCreationEnd = null) {
+            mGhost = aGhost;
+            mOriginal = aOriginal;
 
-            mGhostTransform = Ghost.GetComponent<Transform>();
-            mGhostRigidBody = Ghost.GetComponent<Rigidbody2D>();
+            mOriginalTransform = aOriginal.GetComponent<Transform>();
+            mOriginalRigidBody = aOriginal.GetComponent<Rigidbody2D>();
+
+            mGhostTransform = aGhost.GetComponent<Transform>();
+            mGhostRigidBody = aGhost.GetComponent<Rigidbody2D>();
 
             mStartPosition = mOriginalRigidBody.position;
             mStartOriginalRotation = mOriginalRigidBody.rotation;
@@ -48,7 +50,8 @@ public static class GhostCreator {
 
             mOriginalRigidBody.isKinematic = true;
 
-            mOnRestoreGhost = OnRestoreGhost;
+            mOnRestoreGhost = aOnRestoreGhost;
+            mOnCreationEnd = aOnCreationEnd;
 
             mGhostRigidBody.angularVelocity = mStartAngularVelocity;
             mGhostRigidBody.velocity = mStartLinearVelocity;
@@ -84,6 +87,7 @@ public static class GhostCreator {
     static List<GhostInfo> mGhostsInfo = new List<GhostInfo>();
     static Dictionary<int, int> mLayerConverter = new Dictionary<int, int>();
     static Dictionary<GameObject, GameObject> mGhostsToOriginal = new Dictionary<GameObject, GameObject>();
+    static Dictionary<GameObject, GameObject> mOriginalToGhosts = new Dictionary<GameObject, GameObject>();
     static Timer mGhostLivingTimer;
 
     static GhostCreator() {
@@ -96,6 +100,10 @@ public static class GhostCreator {
         get { return mGhostsToOriginal; }
     }
 
+    static public Dictionary<GameObject, GameObject> originalToGhost {
+        get { return mOriginalToGhosts; }
+    }
+
     static public EventHandler OnGhostLivingTimeExceeded;
 
     static public void RegisterLayerConverter(int aFrom, int aTo) {
@@ -106,26 +114,32 @@ public static class GhostCreator {
         mGhosters.Add(aGhoster);
     }
 
-    static public void RegisterGhost(GameObject Ghost, GameObject Original, Action OnRestoreObject = null) {
-        mGhostsInfo.Add(new GhostInfo(Ghost, Original, OnRestoreObject));
+    static public void RegisterGhost(GameObject aGhost, GameObject aOriginal, Action aOnRestoreObject = null, Action aOnGhostsCreationEnd = null) {
+        mGhostsInfo.Add(new GhostInfo(aGhost, aOriginal, aOnRestoreObject, aOnGhostsCreationEnd));
         int newLayer;
-        if (mLayerConverter.TryGetValue(Ghost.layer, out newLayer)) {
-            Ghost.layer = newLayer;
+        if (mLayerConverter.TryGetValue(aGhost.layer, out newLayer)) {
+            aGhost.layer = newLayer;
         }
-        mGhostsToOriginal[Ghost] = Original;
+        mGhostsToOriginal[aGhost] = aOriginal;
+        mOriginalToGhosts[aOriginal] = aGhost;
     }
 	
 	static public void CreateGhosts(float aLivingTime = 0) {
         foreach (Ghoster g in mGhosters) {
             g.CreateGhost();
         }
+        for (int i = 0; i < mGhostsInfo.Count; i++) {
+            if (mGhostsInfo[i].mOnCreationEnd != null) {
+                mGhostsInfo[i].mOnCreationEnd();
+            }
+        }
         SetUpTimer(aLivingTime);
     }
 
     static public void DeleteGhosts() {
-        foreach(GhostInfo ghostInfo in mGhostsInfo) {
-            ghostInfo.DestroyGhost();
-            ghostInfo.RestoreOriginalObjectState();
+        for (int i = 0; i < mGhostsInfo.Count; i++) {
+            mGhostsInfo[i].DestroyGhost();
+            mGhostsInfo[i].RestoreOriginalObjectState();
         }
         mGhostsInfo.Clear();
         mGhostsToOriginal.Clear();
@@ -143,6 +157,12 @@ public static class GhostCreator {
         for (int i = 0; i < mGhostsInfo.Count; i++) {
             res[i] = mGhostsInfo[i].ghostGameObject;
         }
+        return res;
+    }
+
+    static public GameObject GetGhostByOriginal(GameObject Original) {
+        GameObject res = null;
+        mOriginalToGhosts.TryGetValue(Original, out res);
         return res;
     }
 
