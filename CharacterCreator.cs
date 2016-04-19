@@ -51,6 +51,9 @@ public class CharacterCreator : MonoBehaviour {
 
     Transform mPMRootTranform;
 
+    HandGrabber mLeftHand;
+    HandGrabber mRightHand;
+
     public Skeleton skeleton { get { return mSkeleton; } }
     public PhysicsModel physicsModel { get { return mPhysicsModel; } }
     public IK.IKTarget leftHandIKTarget { get { return mLeftHandIKTarget; } }
@@ -65,6 +68,9 @@ public class CharacterCreator : MonoBehaviour {
     public IKTargetUI spineIKTargetUI { get { return mSpine3IKTargetUI; } }
     public IKTargetUI leftLegIKTargetUI { get { return mLeftLegIKTargetUI; } }
     public IKTargetUI rightLegIKTargetUI { get { return mRightLegIKTargetUI; } }
+
+    public HandGrabber leftHand { get { return mLeftHand; } }
+    public HandGrabber rightHand { get { return mRightHand; } }
 
     public EventHandler OnIKTargetUIPosChanged;
 
@@ -214,6 +220,9 @@ public class CharacterCreator : MonoBehaviour {
         mSpine3IKTargetUI = CreateIKTargetUI(mSpine3IKTarget);
         mLeftLegIKTargetUI = CreateIKTargetUI(mLeftLegIKTarget);
         mRightLegIKTargetUI = CreateIKTargetUI(mRightLegIKTarget);
+
+        mLeftHand = mPhysicsModel.GetObjectByName("LeftHand").GetComponent<HandGrabber>();
+        mRightHand = mPhysicsModel.GetObjectByName("RightHand").GetComponent<HandGrabber>();
 
         mPelvisIKTarget.UpdatePosition();
     }
