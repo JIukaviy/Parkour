@@ -11,12 +11,14 @@ public class MainLoop : MonoBehaviour {
     public ReplayRecorder MainReplayRecorder;
     public ReplayPlayer MainReplayPlayer;
 
-    public ReplayRecorder GhostReplayRecorder;
-    public ReplayPlayer GhostReplayPlayer;
-
     public OnCollideInformer FinishInformer;
 
     public float GhostLivingTime;
+
+    public ButtonListener PlayButton;
+
+    public ButtonListener LGrabButton;
+    public ButtonListener RGrabButton;
 
     Transform mPMRootTranform;
     SkeletonGhoster mSkeletonGhoster;
@@ -47,18 +49,6 @@ public class MainLoop : MonoBehaviour {
         }
     }
 
-    void MoveGhostsReplayToMain() {
-        Replay ghostsReplay;
-        if (GhostReplayPlayer.playing) {
-            ghostsReplay = GhostReplayPlayer.replay;
-            GhostReplayPlayer.Stop();
-        } else {
-            ghostsReplay = GhostReplayRecorder.StopRecording();
-        }
-        ghostsReplay.ReplaceGameObjects(GhostCreator.ghostToOriginal);
-        MainReplayRecorder.ConcatenateReplay(ghostsReplay);
-    }
-
     void OnIKTargetUIDown(object sender, EventArgs args) {
         //GhostCreator.DeleteGhosts();
     }
@@ -72,20 +62,8 @@ public class MainLoop : MonoBehaviour {
         Replay replay = MainReplayRecorder.StopRecording();
         Character.HideUI();
         GhostCreator.DeleteGhosts();
-        Destroy(GameObject.Find("PlayButton"));
+        HideControllerUI();
         MainReplayPlayer.Play(replay);
-    }
-
-    void OnIKTargetUIPosChanged(object sender, EventArgs args) {
-        GhostReplayPlayer.Stop();
-        GhostReplayRecorder.EraseRecorded();
-        GhostReplayRecorder.ContinueRecording();
-    }
-
-    void OnGhostReplayEnd(object sender, EventArgs args) {
-        GhostReplayPlayer.ToStart();
-        GhostReplayPlayer.Continue();
-        Debug.Log("GHOSTS REPLAY IS ENDED");
     }
 
     void OnMainReplayEnd(object sender, EventArgs args) {
@@ -100,6 +78,32 @@ public class MainLoop : MonoBehaviour {
 
     void OnGhostLivingTimeExceeded(object sender, EventArgs args) {
         GhostCreator.RestoreGhostState(GhostLivingTime);
+    }
+
+    void OnPlayButtonPress(object sender, EventArgs args) {
+        UnPause();
+    }
+
+    void OnPlayButtonRelease(object sender, EventArgs args) {
+        Pause();
+    }
+
+    void OnLGrabButtonPress(object sender, EventArgs args) {
+        Character.leftHand.ToggleGrab();
+        GhostCreator.RestoreGhostState(GhostLivingTime);
+    }
+
+    void OnRGrabButtonPress(object sender, EventArgs args) {
+        Character.rightHand.ToggleGrab();
+        GhostCreator.RestoreGhostState(GhostLivingTime);
+    }
+
+    void HideControllerUI() {
+        GameObject[] UIs = GameObject.FindGameObjectsWithTag("ControllerUI");
+
+        foreach (GameObject ui in UIs) {
+            ui.SetActive(false);
+        }
     }
 
     void Start() {
@@ -135,7 +139,12 @@ public class MainLoop : MonoBehaviour {
         MainReplayPlayer.OnReplayEnd += OnMainReplayEnd;
         FinishInformer.OnFinish += OnFinish;
 
+        PlayButton.OnPress += OnPlayButtonPress;
+        PlayButton.OnRelease += OnPlayButtonRelease;
+
+        LGrabButton.OnPress += OnLGrabButtonPress;
+        RGrabButton.OnPress += OnRGrabButtonPress;
+
         Pause();
     }
-
 }

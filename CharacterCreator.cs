@@ -180,7 +180,7 @@ public class CharacterCreator : MonoBehaviour {
         }
     }
 
-    void Awake() {
+    void Start() {
         Physics2D.gravity = new Vector2(0, -3);
 
         Dictionary<string, IK.AngleLimits> AngleLimits;
