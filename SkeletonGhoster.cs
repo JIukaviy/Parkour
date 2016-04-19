@@ -27,6 +27,7 @@ public class SkeletonGhoster : GhostCreator.Ghoster {
         HandGrabber instanceHandGrabber = instance.GetComponent<HandGrabber>();
 
         Action restoreGhost = null;
+        Action onCreationEnd = null;
 
         if (gameObjectManipulator != null && instanceManipulator != null) {
             if (gameObjectHandGrabber != null && instanceHandGrabber != null) {
@@ -40,7 +41,11 @@ public class SkeletonGhoster : GhostCreator.Ghoster {
                         instanceHandGrabber.canGrab = gameObjectHandGrabber.canGrab;
                     }
                 };
-                instanceHandGrabber.OnCopy(gameObjectHandGrabber);
+                onCreationEnd = delegate () {
+                    GameObject ghost = GhostCreator.GetGhostByOriginal(gameObject);
+                    Rigidbody2D ghostRigidBody = ghost == null ? null : ghost.GetComponent<Rigidbody2D>();
+                    instanceHandGrabber.OnCopy(gameObjectHandGrabber, ghostRigidBody);
+                };
             } else {
                 restoreGhost = delegate () {
                     instanceManipulator.targetAngle = gameObjectManipulator.targetAngle;
@@ -49,7 +54,7 @@ public class SkeletonGhoster : GhostCreator.Ghoster {
             instanceManipulator.OnCopy(gameObjectManipulator);
         }
 
-        GhostCreator.RegisterGhost(instance, gameObject, restoreGhost);
+        GhostCreator.RegisterGhost(instance, gameObject, restoreGhost, onCreationEnd);
 
         foreach (Skeleton.Bone bone in Bone.childs) {
             CreateGhost(bone, instance.GetComponent<Rigidbody2D>());

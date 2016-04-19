@@ -79,11 +79,19 @@ public class HandGrabber : MonoBehaviour {
         mGrabbed = false;
     }
 
-    public void OnCopy(HandGrabber aOriginal) {
-        mJoint = aOriginal.mJoint;
+    public void OnCopy(HandGrabber aOriginal, Rigidbody2D newRigidBody) {
         mGrabbed = aOriginal.mGrabbed;
         grabType = aOriginal.grabType;
-        mCollidedBody = aOriginal.mCollidedBody;
+        Joint2D[] joints;
+        if (grabType == GrabType.HingeGrab) {
+            joints = GetComponents<HingeJoint2D>();
+        } else {
+            joints = GetComponents<FixedJoint2D>();
+        }
+        // Жесточайший костыль, предполагается что Joint созданный HandGrabber - последний, 
+        // как понять который из тысячи - наш, пока непонятно.
+        mJoint = joints[joints.Length - 1];
+        mCollidedBody = newRigidBody;
         mCollissionPoint = aOriginal.mCollissionPoint;
         canGrab = aOriginal.canGrab;
     }
