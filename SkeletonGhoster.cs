@@ -23,14 +23,30 @@ public class SkeletonGhoster : GhostCreator.Ghoster {
         Manipulator gameObjectManipulator = gameObject.GetComponent<Manipulator>();
         Manipulator instanceManipulator = instance.GetComponent<Manipulator>();
 
+        HandGrabber gameObjectHandGrabber = gameObject.GetComponent<HandGrabber>();
+        HandGrabber instanceHandGrabber = instance.GetComponent<HandGrabber>();
+
         Action restoreGhost = null;
 
         if (gameObjectManipulator != null && instanceManipulator != null) {
-            restoreGhost = delegate () {
-                instanceManipulator.SetReferenceAngle(gameObjectManipulator.referenceAngle, gameObjectManipulator.angle);
-                instanceManipulator.targetAngle = gameObjectManipulator.targetAngle;
-            };
-            restoreGhost();
+            if (gameObjectHandGrabber != null && instanceHandGrabber != null) {
+                restoreGhost = delegate () {
+                    instanceManipulator.targetAngle = gameObjectManipulator.targetAngle;
+
+                    if (gameObjectHandGrabber != null && instanceHandGrabber != null) {
+                        if (!gameObjectHandGrabber.grabbed) {
+                            instanceHandGrabber.Ungrab();
+                        }
+                        instanceHandGrabber.canGrab = gameObjectHandGrabber.canGrab;
+                    }
+                };
+                instanceHandGrabber.OnCopy(gameObjectHandGrabber);
+            } else {
+                restoreGhost = delegate () {
+                    instanceManipulator.targetAngle = gameObjectManipulator.targetAngle;
+                };
+            }
+            instanceManipulator.OnCopy(gameObjectManipulator);
         }
 
         GhostCreator.RegisterGhost(instance, gameObject, restoreGhost);
