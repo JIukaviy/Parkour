@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
+using System.Timers;
 using System;
 
 public class MainLoop : MonoBehaviour {
@@ -7,30 +8,36 @@ public class MainLoop : MonoBehaviour {
 
     public CharacterCreator Character;
 
-    public ReplayRecorder ReplayRecorder;
-    public ReplayPlayer ReplayPlayer;
+    public ReplayRecorder MainReplayRecorder;
+    public ReplayPlayer MainReplayPlayer;
+
     public OnCollideInformer FinishInformer;
 
+    public float GhostLivingTime;
+
+    public ButtonListener PlayButton;
+
+    public ButtonListener LGrabButton;
+    public ButtonListener RGrabButton;
+
     Transform mPMRootTranform;
-    List<IKTargetUI> mIKTargetUIList;
     SkeletonGhoster mSkeletonGhoster;
 
     bool mPaused = true;
 
     void Pause() {
-        Character.SetSkeletonAnglesFromPM();
+        MainReplayRecorder.PauseRecording();
         Character.ShowUI();
-        GhostCreator.CreateGhosts();
-        ReplayRecorder.PauseRecording();
+        Character.SetSkeletonAnglesFromPM();
+        GhostCreator.CreateGhosts(GhostLivingTime);
         mPaused = true;
     }
 
     void UnPause() {
-        Character.SetPMTargetAnglesFromSkeleton();
         ChainLineRenderer.HideAll();
         Character.HideUI();
         GhostCreator.DeleteGhosts();
-        ReplayRecorder.ContinueRecording();
+        MainReplayRecorder.ContinueRecording();
         mPaused = false;
     }
 
@@ -48,19 +55,59 @@ public class MainLoop : MonoBehaviour {
 
     void OnIKTargetUIUp(object sender, EventArgs args) {
         Character.SetPMTargetAnglesFromSkeleton();
-        GhostCreator.RestoreGhostState();
+        GhostCreator.RestoreGhostState(GhostLivingTime);
     }
 
     void OnFinish(object sender, EventArgs args) {
-        Replay replay = ReplayRecorder.StopRecording();
+        Replay replay = MainReplayRecorder.StopRecording();
         Character.HideUI();
         GhostCreator.DeleteGhosts();
-        ReplayPlayer.Play(replay);
+        HideControllerUI();
+        MainReplayPlayer.Play(replay);
     }
 
-    void OnReplayEnd(object sender, EventArgs args) {
-        ReplayPlayer.ToStart();
-        ReplayPlayer.Continue();
+    void OnMainReplayEnd(object sender, EventArgs args) {
+        MainReplayPlayer.ToStart();
+        MainReplayPlayer.Continue();
+    }
+
+    void OnFinishMainReplayEnd(object sender, EventArgs args) {
+        MainReplayPlayer.ToStart();
+        MainReplayPlayer.Continue();
+    }
+
+    void OnGhostLivingTimeExceeded(object sender, EventArgs args) {
+        GhostCreator.RestoreGhostState(GhostLivingTime);
+    }
+
+    void OnPlayButtonPress(object sender, EventArgs args) {
+        UnPause();
+    }
+
+    void OnPlayButtonRelease(object sender, EventArgs args) {
+        Pause();
+    }
+
+    void OnLGrabButtonPress(object sender, EventArgs args) {
+        Character.leftHand.ToggleGrab();
+        GhostCreator.RestoreGhostState(GhostLivingTime);
+    }
+
+    void OnRGrabButtonPress(object sender, EventArgs args) {
+        Character.rightHand.ToggleGrab();
+        GhostCreator.RestoreGhostState(GhostLivingTime);
+    }
+
+    void HideControllerUI() {
+        GameObject[] UIs = GameObject.FindGameObjectsWithTag("ControllerUI");
+
+        foreach (GameObject ui in UIs) {
+            ui.SetActive(false);
+        }
+    }
+
+    void Awake() {
+        GhostCreator.Init();
     }
 
     void Start() {
@@ -85,13 +132,22 @@ public class MainLoop : MonoBehaviour {
         Character.leftLegIKTargetUI.OnUp = OnIKTargetUIUp;
         Character.rightLegIKTargetUI.OnUp = OnIKTargetUIUp;
 
+        //Character.OnIKTargetUIPosChanged += OnIKTargetUIPosChanged;
+
         GhostCreator.RegisterLayerConverter(LayerMask.NameToLayer("Character"), LayerMask.NameToLayer("GhostCharacter"));
         GhostCreator.RegisterLayerConverter(LayerMask.NameToLayer("Dynamic"), LayerMask.NameToLayer("Ghost"));
+        GhostCreator.OnGhostLivingTimeExceeded += OnGhostLivingTimeExceeded;
 
-        ReplayRecorder.timeDelta = 0.1f;
-        ReplayRecorder.StartRecording("Dynamic");
-        ReplayPlayer.OnReplayEnd += OnReplayEnd;
+        MainReplayRecorder.timeDelta = 0.1f;
+        MainReplayRecorder.StartRecording("Dynamic");
+        MainReplayPlayer.OnReplayEnd += OnMainReplayEnd;
         FinishInformer.OnFinish += OnFinish;
+
+        PlayButton.OnPress += OnPlayButtonPress;
+        PlayButton.OnRelease += OnPlayButtonRelease;
+
+        LGrabButton.OnPress += OnLGrabButtonPress;
+        RGrabButton.OnPress += OnRGrabButtonPress;
 
         Pause();
     }

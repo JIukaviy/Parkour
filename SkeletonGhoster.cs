@@ -23,17 +23,38 @@ public class SkeletonGhoster : GhostCreator.Ghoster {
         Manipulator gameObjectManipulator = gameObject.GetComponent<Manipulator>();
         Manipulator instanceManipulator = instance.GetComponent<Manipulator>();
 
+        HandGrabber gameObjectHandGrabber = gameObject.GetComponent<HandGrabber>();
+        HandGrabber instanceHandGrabber = instance.GetComponent<HandGrabber>();
+
         Action restoreGhost = null;
+        Action onCreationEnd = null;
 
         if (gameObjectManipulator != null && instanceManipulator != null) {
-            restoreGhost = delegate () {
-                instanceManipulator.SetReferenceAngle(gameObjectManipulator.referenceAngle, gameObjectManipulator.angle);
-                instanceManipulator.targetAngle = gameObjectManipulator.targetAngle;
-            };
-            restoreGhost();
+            if (gameObjectHandGrabber != null && instanceHandGrabber != null) {
+                restoreGhost = delegate () {
+                    instanceManipulator.targetAngle = gameObjectManipulator.targetAngle;
+
+                    if (gameObjectHandGrabber != null && instanceHandGrabber != null) {
+                        if (!gameObjectHandGrabber.grabbed) {
+                            instanceHandGrabber.Ungrab();
+                        }
+                        instanceHandGrabber.canGrab = gameObjectHandGrabber.canGrab;
+                    }
+                };
+                onCreationEnd = delegate () {
+                    GameObject ghost = GhostCreator.GetGhostByOriginal(gameObject);
+                    Rigidbody2D ghostRigidBody = ghost == null ? null : ghost.GetComponent<Rigidbody2D>();
+                    instanceHandGrabber.OnCopy(gameObjectHandGrabber, ghostRigidBody);
+                };
+            } else {
+                restoreGhost = delegate () {
+                    instanceManipulator.targetAngle = gameObjectManipulator.targetAngle;
+                };
+            }
+            instanceManipulator.OnCopy(gameObjectManipulator);
         }
 
-        GhostCreator.RegisterGhost(instance, gameObject, restoreGhost);
+        GhostCreator.RegisterGhost(instance, gameObject, restoreGhost, onCreationEnd);
 
         foreach (Skeleton.Bone bone in Bone.childs) {
             CreateGhost(bone, instance.GetComponent<Rigidbody2D>());

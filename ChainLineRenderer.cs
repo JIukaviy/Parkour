@@ -10,9 +10,6 @@ public class ChainLineRenderer : MonoBehaviour {
     float mWidth;
 
     void Awake() {
-        if (mInstances == null) {
-            mInstances = new List<ChainLineRenderer>();
-        }
         mInstances.Add(this);
     }
 
@@ -34,7 +31,7 @@ public class ChainLineRenderer : MonoBehaviour {
         ChainLineRenderer chainRenderer = gameObject.GetComponent<ChainLineRenderer>();
         chainRenderer.mBone = Bone;
         chainRenderer.mWidth = Width;
-               
+        
         foreach(Skeleton.Bone bone in Bone.childs) {
             ApplyLineRenderer(bone, Width);
         }
@@ -62,5 +59,12 @@ public class ChainLineRenderer : MonoBehaviour {
                 r.Show();
             }
         }
+    }
+
+    public static void Init() {
+        if (mInstances != null) {
+            mInstances.Clear();
+        }
+        mInstances = new List<ChainLineRenderer>();
     }
 }

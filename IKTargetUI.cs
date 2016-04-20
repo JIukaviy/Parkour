@@ -6,6 +6,7 @@ using System;
 public class IKTargetUI : MonoBehaviour, IDragHandler, IPointerDownHandler, IPointerUpHandler {
     public EventHandler OnDown;
     public EventHandler OnUp;
+    public EventHandler OnPosChanged;
 
     IK.IKTarget mTarget;
     RectTransform mTransform;
@@ -33,6 +34,9 @@ public class IKTargetUI : MonoBehaviour, IDragHandler, IPointerDownHandler, IPoi
 
     public void OnTargetPosChanged(object sender, IK.IKTarget.IKTargetEventArgs e) {
         mTransform.position = Camera.main.WorldToScreenPoint(e.position);
+        if (OnPosChanged != null) {
+            OnPosChanged.Invoke(this, new EventArgs());
+        }
     }
 
     public void Show() {

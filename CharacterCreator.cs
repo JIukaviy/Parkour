@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
+using System;
 
 public class CharacterCreator : MonoBehaviour {
     public GameObject PelvisPrefab;
@@ -46,7 +47,12 @@ public class CharacterCreator : MonoBehaviour {
     IKTargetUI mLeftLegIKTargetUI;
     IKTargetUI mRightLegIKTargetUI;
 
+    List<IKTargetUI> mIKTargetUIList;
+
     Transform mPMRootTranform;
+
+    HandGrabber mLeftHand;
+    HandGrabber mRightHand;
 
     public Skeleton skeleton { get { return mSkeleton; } }
     public PhysicsModel physicsModel { get { return mPhysicsModel; } }
@@ -62,6 +68,12 @@ public class CharacterCreator : MonoBehaviour {
     public IKTargetUI spineIKTargetUI { get { return mSpine3IKTargetUI; } }
     public IKTargetUI leftLegIKTargetUI { get { return mLeftLegIKTargetUI; } }
     public IKTargetUI rightLegIKTargetUI { get { return mRightLegIKTargetUI; } }
+
+    public HandGrabber leftHand { get { return mLeftHand; } }
+    public HandGrabber rightHand { get { return mRightHand; } }
+
+    public EventHandler OnIKTargetUIPosChanged;
+
 
     void AddModelInfo(string Name, ref Dictionary<string, PhysicsModel.PMObjectSettings> PMObjectSettings, 
         ref Dictionary<string, IK.AngleLimits> AngleLimits, float lowerAngle, float upperAngle, Skeleton Sk,
@@ -142,29 +154,33 @@ public class CharacterCreator : MonoBehaviour {
         IKTargetUI targetUI = gameObject.GetComponent<IKTargetUI>();
         targetUI.IKTarget = Target;
         targetUI.skeleton = mSkeleton;
+        targetUI.OnPosChanged += OnTargetPosChanged;
         gameObject.transform.SetParent(CanvasTransform, false);
+        mIKTargetUIList.Add(targetUI);
         return targetUI;
     }
 
     public void ShowUI() {
-        mSpine3IKTargetUI.Show();
-        mLeftHandIKTargetUI.Show();
-        mRightHandIKTargetUI.Show();
-        mLeftLegIKTargetUI.Show();
-        mRightLegIKTargetUI.Show();
+        foreach(IKTargetUI targetUI in mIKTargetUIList) {
+            targetUI.Show();
+        }
         ChainLineRenderer.ShowAll();
     }
 
     public void HideUI() {
-        mSpine3IKTargetUI.Hide();
-        mLeftHandIKTargetUI.Hide();
-        mRightHandIKTargetUI.Hide();
-        mLeftLegIKTargetUI.Hide();
-        mRightLegIKTargetUI.Hide();
+        foreach(IKTargetUI targetUI in mIKTargetUIList) {
+            targetUI.Hide();
+        }
         ChainLineRenderer.HideAll();
     }
 
-    void Awake() {
+    public void OnTargetPosChanged(object sender, EventArgs e) {
+        if (OnIKTargetUIPosChanged != null) {
+            OnIKTargetUIPosChanged.Invoke(sender, e);
+        }
+    }
+
+    void Start() {
         Physics2D.gravity = new Vector2(0, -3);
 
         Dictionary<string, IK.AngleLimits> AngleLimits;
@@ -191,17 +207,23 @@ public class CharacterCreator : MonoBehaviour {
 
         mSpine3IKTarget.anchor = false;
 
+        ChainLineRenderer.Init();
         ChainLineRenderer.ApplyLineRenderer(mSkeleton.root, 0.05f);
 
         mSkeletonToPMMap = new PhysicsModel.SkeletonToPhysicsModelAnglesMap(mSkeleton.GetLocalAnglesOrder(), mPhysicsModel.GetAnglesOrder());
 
         mPMRootTranform = mPhysicsModel.GetObjectByName("Pelvis").transform;
 
+        mIKTargetUIList = new List<IKTargetUI>();
+
         mLeftHandIKTargetUI = CreateIKTargetUI(mLeftHandIKTarget);
         mRightHandIKTargetUI = CreateIKTargetUI(mRightHandIKTarget);
         mSpine3IKTargetUI = CreateIKTargetUI(mSpine3IKTarget);
         mLeftLegIKTargetUI = CreateIKTargetUI(mLeftLegIKTarget);
         mRightLegIKTargetUI = CreateIKTargetUI(mRightLegIKTarget);
+
+        mLeftHand = mPhysicsModel.GetObjectByName("LeftHand").GetComponent<HandGrabber>();
+        mRightHand = mPhysicsModel.GetObjectByName("RightHand").GetComponent<HandGrabber>();
 
         mPelvisIKTarget.UpdatePosition();
     }

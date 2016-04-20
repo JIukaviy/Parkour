@@ -2,8 +2,7 @@
 using System.Collections.Generic;
 
 public class ReplayRecorder : MonoBehaviour {
-    bool mRecordingReplay;
-    Replay mCurrentReplay;
+    Replay mReplay;
 
     float mCurrentFrameTime;
     float mTimeDelta;
@@ -13,9 +12,17 @@ public class ReplayRecorder : MonoBehaviour {
         set { mTimeDelta = value; }
     }
 
+    public bool recording { get { return enabled; } }
+    public Replay replay { get { return mReplay; } }
+
+    void Awake() {
+        enabled = false;
+    }
+
     public void StartRecording(GameObject[] aGameObjects) {
-        mCurrentReplay = new Replay(aGameObjects);
-        mRecordingReplay = true;
+        mReplay = new Replay(aGameObjects);
+        mCurrentFrameTime = 0;
+        enabled = true;
     }
 
     public void StartRecording(List<GameObject> aGameObjects) {
@@ -27,28 +34,45 @@ public class ReplayRecorder : MonoBehaviour {
     }
 
     public void PauseRecording() {
-        mRecordingReplay = false;
+        enabled = false;
     }
 
     public void ContinueRecording() {
-        if (mCurrentReplay != null) {
-            mRecordingReplay = true;
+        if (mReplay != null) {
+            enabled = true;
         }
     }
 
     public Replay StopRecording() {
-        mRecordingReplay = false;
         mCurrentFrameTime = 0;
-        return mCurrentReplay;
+        enabled = false;
+        return mReplay;
+    }
+
+    public void EraseRecorded() {
+        if (mReplay != null) {
+            mReplay.EraseRecorded();
+            enabled = false;
+        }
+    }
+
+    public void ConcatenateReplay(Replay aReplay) {
+        if (mReplay == null) {
+            mReplay = aReplay;
+        } else {
+            mReplay.ConcatenateReplay(aReplay);
+        }
+    }
+
+    public void ReplaceGameObjects(Dictionary<GameObject, GameObject> aGameObjects) {
+        mReplay.ReplaceGameObjects(aGameObjects);
     }
 
     void Update() {
-        if (mRecordingReplay) {
-            mCurrentFrameTime += Time.deltaTime;
-            if (mCurrentFrameTime >= mTimeDelta) {
-                mCurrentReplay.RecordFrame(mCurrentFrameTime);
-                mCurrentFrameTime -= mTimeDelta;
-            }
+        mCurrentFrameTime += Time.deltaTime;
+        if (mCurrentFrameTime >= mTimeDelta) {
+            mReplay.RecordFrame(mCurrentFrameTime);
+            mCurrentFrameTime -= mTimeDelta;
         }
     }
 }
