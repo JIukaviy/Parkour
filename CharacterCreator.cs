@@ -207,6 +207,7 @@ public class CharacterCreator : MonoBehaviour {
 
         mSpine3IKTarget.anchor = false;
 
+        ChainLineRenderer.Init();
         ChainLineRenderer.ApplyLineRenderer(mSkeleton.root, 0.05f);
 
         mSkeletonToPMMap = new PhysicsModel.SkeletonToPhysicsModelAnglesMap(mSkeleton.GetLocalAnglesOrder(), mPhysicsModel.GetAnglesOrder());

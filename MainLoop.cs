@@ -106,6 +106,10 @@ public class MainLoop : MonoBehaviour {
         }
     }
 
+    void Awake() {
+        GhostCreator.Init();
+    }
+
     void Start() {
         Physics2D.gravity = new Vector2(0, -3);
 

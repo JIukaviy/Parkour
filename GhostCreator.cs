@@ -90,12 +90,6 @@ public static class GhostCreator {
     static Dictionary<GameObject, GameObject> mOriginalToGhosts = new Dictionary<GameObject, GameObject>();
     static Timer mGhostLivingTimer;
 
-    static GhostCreator() {
-        GameObject timerObject = new GameObject();
-        mGhostLivingTimer = timerObject.AddComponent<Timer>();
-        mGhostLivingTimer.OnElapsed += OnTimer;
-    }
-
     static public Dictionary<GameObject, GameObject> ghostToOriginal {
         get { return mGhostsToOriginal; }
     }
@@ -164,6 +158,18 @@ public static class GhostCreator {
         GameObject res = null;
         mOriginalToGhosts.TryGetValue(Original, out res);
         return res;
+    }
+
+    static public void Init() {
+        mGhosters.Clear();
+        mGhostsInfo.Clear();
+        mLayerConverter.Clear();
+        mGhostsToOriginal.Clear();
+        mOriginalToGhosts.Clear();
+
+        GameObject timerObject = new GameObject();
+        mGhostLivingTimer = timerObject.AddComponent<Timer>();
+        mGhostLivingTimer.OnElapsed += OnTimer;
     }
 
     static void SetUpTimer(float aLivingTime) {
